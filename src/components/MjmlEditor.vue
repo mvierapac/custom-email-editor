@@ -10,16 +10,16 @@
           @click="selectRow(rowIndex)"
         >
           <!-- Renderizado dinámico de columnas -->
-          <div v-if="row.columns.length === 1" class="single-column" @dragover.prevent @drop="onDrop(rowIndex, 0)">
+          <div v-if="row.columns.length === 1" class="single-column" @dragover.prevent @drop="onDrop(rowIndex, 0)" @click="handleBlockClick($event)">
             <div v-if="row.columns[0].content" v-html="row.columns[0].content"></div>
             <p v-else>1 Column selected</p>
           </div>
           <div v-else class="two-columns">
-            <div class="column" @dragover.prevent @drop="onDrop(rowIndex, 0)">
+            <div class="column" @dragover.prevent @drop="onDrop(rowIndex, 0)" @click="handleBlockClick($event)">
               <div v-if="row.columns[0].content" v-html="row.columns[0].content"></div>
               <p v-else>Columna 1</p>
             </div>
-            <div class="column" @dragover.prevent @drop="onDrop(rowIndex, 1)">
+            <div class="column" @dragover.prevent @drop="onDrop(rowIndex, 1)" @click="handleBlockClick($event)">
               <div v-if="row.columns[1].content" v-html="row.columns[1].content"></div>
               <p v-else>Columna 2</p>
             </div>
@@ -33,6 +33,13 @@
       <div class="tool-panel">
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="button">Arrastra MJ-Button</div>
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="text">Arrastra Texto MJML</div>
+        <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="image">MJ-image</div>
+      </div>
+      <div class="properties-panel">
+        <input type="text" v-model="buttonText" placeholder="Nuevo texto del botón" />
+        <button class="property-btn" @click="updateButtonText(buttonText)">Actualizar texto del botón</button>
+        <input type="text" v-model="buttonLink" placeholder="Link del botón" />
+        <button class="property-btn" @click="updateButtonHref(buttonLink)">Actualizar href del botón</button>
       </div>
     </div>
   </div>
@@ -46,6 +53,9 @@ export default {
     return {
       selectedRowIndex: null, // Almacena el índice de la fila seleccionada
       dragItemType: null,
+      selectedBlock: null,
+      buttonText: '',
+      buttonLink: '',
       rows: [
         {
           isSelected: false,
@@ -63,45 +73,53 @@ export default {
       this.dragItemType = event.target.getAttribute('data-type') // Obtiene el tipo de MJML a insertar
       console.log('Arrastrando: ' + this.dragItemType)
     },
-    onDrop (rowIndex, columnIndex) {
-  if (!this.dragItemType) return
+    onDrop(rowIndex, columnIndex) {
+      if (!this.dragItemType) return;
 
-  // Define el bloque MJML a insertar basado en el tipo arrastrado
-  let mjmlContent = ''
-  if (this.dragItemType === 'button') {
-    mjmlContent = `
-      <mj-button>
-        ¡Botón MJML!
-      </mj-button>
-    `
-  } else if (this.dragItemType === 'text') {
-    mjmlContent = `
-      <mj-text>
-        ¡Texto MJML insertado!
-      </mj-text>
-    `
-  }
+      let mjmlContent = '';
+      const blockId = `${this.dragItemType}-${Date.now()}`;
+      
+      // Generamos el MJML según el tipo de bloque
+      if (this.dragItemType === 'button') {
+        mjmlContent = `
+          <mj-button css-class="mj-button-${blockId}" text-decoration="none" href="https://marca.com" background-color="#1973b8" color="white" editable="true" border-radius="1px" inner-padding="12px 32px">
+            Botón
+          </mj-button>
+        `;
+      } else if (this.dragItemType === 'text') {
+        mjmlContent = `
+          <mj-text css-class="mj-text-${blockId}">
+            ¡Texto MJML insertado!
+          </mj-text>
+        `;
+      }
 
-  // Renderiza el MJML a HTML
-  const { html } = mjml2html(`
-    <mjml>
-      <mj-body>
-        <mj-section>
-          <mj-column>
-            ${mjmlContent}
-          </mj-column>
-        </mj-section>
-      </mj-body>
-    </mjml>
-  `)
+      // Convertir MJML a HTML
+      const { html } = mjml2html(`
+        <mjml>
+          <mj-body>
+            <mj-section>
+              <mj-column>
+                ${mjmlContent}
+              </mj-column>
+            </mj-section>
+          </mj-body>
+        </mjml>
+      `);
 
-  // Concatenar el nuevo contenido al existente en la columna
-  const existingContent = this.rows[rowIndex].columns[columnIndex].content || ''
-  this.rows[rowIndex].columns[columnIndex].content = existingContent + html
+      // Envolver el HTML en un contenedor que sea clickeable
+      const wrappedHtml = `
+        <div class="block-wrapper" data-block-id="${blockId}" @click="handleBlockClick">
+          ${html}
+        </div>
+      `;
 
-  // Reseteamos el tipo arrastrado
-  this.dragItemType = null
-},
+      // Actualizamos el contenido de la columna con el contenedor envuelto
+      this.rows[rowIndex].columns[columnIndex].content = wrappedHtml;
+
+      // Reseteamos el tipo de bloque arrastrado
+      this.dragItemType = null;
+    },
     clearMjmlBlock () {
       // Limpiamos todas las filas
       this.rows = this.rows.map(row => ({
@@ -134,7 +152,64 @@ export default {
       }
 
       console.log(`Fila ${this.selectedRowIndex + 1}: ${numColumns} columnas seleccionadas`)
+    },
+    handleBlockClick(event) {
+      event.stopPropagation();  // Evitamos que el clic en el bloque seleccione la fila
+
+      const blockHandler = event.target.closest('.block-wrapper'); // Selecciona el contenedor más cercano
+
+      if (blockHandler) {
+        const blockId = blockHandler.getAttribute('data-block-id');
+        console.log('Contenedor seleccionado, ID:', blockId);
+
+        // Resaltar el contenedor seleccionado
+        this.highlightBlock(blockHandler);
+        this.selectedBlock = blockHandler;
+      }
+    },
+    highlightBlock(blockHandler) {
+      // Remover el resaltado de otros bloques
+      document.querySelectorAll('.block-wrapper').forEach(block => {
+        block.classList.remove('selected-block');
+      });
+
+      // Añadir el resaltado al bloque seleccionado
+      blockHandler.classList.add('selected-block');
+    },
+
+    updateButtonText(newText) {
+    if (this.selectedBlock) {
+      // Buscamos el mj-button dentro del bloque seleccionado
+      console.log(this.selectedBlock)
+      const button = this.selectedBlock.querySelector('a');
+
+      if (button) {
+        // Cambiamos el texto del botón
+        button.innerHTML = newText;
+
+        console.log('Texto del botón actualizado a:', newText);
+      } else {
+        console.log('No se encontró un botón en el bloque seleccionado.');
+      }
     }
+    },
+    updateButtonHref(newHref) {
+    if (this.selectedBlock) {
+      // Buscamos el <a> dentro del botón seleccionado
+      const buttonAnchor = this.selectedBlock.querySelector('a');
+
+      if (buttonAnchor) {
+        // Cambiamos el atributo href
+        buttonAnchor.setAttribute('href', newHref);
+
+        console.log('Href del botón actualizado a:', newHref);
+      } else {
+        console.log('No se encontró un <a> en el bloque seleccionado.');
+      }
+    } else {
+      console.log('No hay bloque seleccionado.');
+    }
+  }
   }
 }
 </script>
@@ -244,6 +319,7 @@ background-color: #a9a9a9;
 }
 
 .single-column, .column {
+  box-sizing: border-box;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -252,6 +328,27 @@ background-color: #a9a9a9;
   height: auto; /* Deja que la altura se ajuste automáticamente */
   flex-direction: column; /* Asegura que los elementos se apilen verticalmente */
   width: 100%; /* Asegura que el contenido ocupe todo el ancho */
+}
+
+
+.block-wrapper {
+  box-sizing: border-box;
+  outline: none;
+}
+
+::v-deep .selected-block {
+  outline: 2px solid #007bff; /* Borde azul */
+  box-sizing: border-box;
+}
+
+.selected-block {
+  outline: 2px solid #007bff; /* Aplicamos el borde azul solo cuando está seleccionado */
+}
+
+.properties-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 </style>
