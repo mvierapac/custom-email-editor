@@ -2,7 +2,7 @@
   <div class="wrapper">
     <div>
       <button @click="clearMjmlBlock">Limpiar Lienzo</button>
-      <div class="canvas">
+      <div class="canvas" ref="editorContainer">
         <div
           v-for="(row, rowIndex) in rows"
           :key="rowIndex"
@@ -49,6 +49,20 @@
 import mjml2html from 'mjml-browser'
 
 export default {
+
+  mounted() {
+      // Intercepta todos los clics en enlaces dentro del editor
+      console.log('mounted')
+      this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation);
+
+    },
+
+    beforeUnmount() {
+      // Elimina el listener al desmontar el componente
+      this.$refs.editorContainer.removeEventListener('click', this.preventLinkNavigation);
+
+    },
+
   data () {
     return {
       selectedRowIndex: null, // Almacena el índice de la fila seleccionada
@@ -69,6 +83,17 @@ export default {
     }
   },
   methods: {
+    preventLinkNavigation(event) {
+      console.log(event)
+    const target = event.target.closest('a'); // Verificamos si el clic fue en un enlace
+
+    if (target && target.closest('.block-wrapper')) {
+      // Si el enlace está dentro del editor (e.g., en un .block-wrapper), prevenimos la redirección
+      event.preventDefault();
+      console.log('Redirección prevenida en el editor.');
+    }
+  },
+
     onDragStart (event) {
       this.dragItemType = event.target.getAttribute('data-type') // Obtiene el tipo de MJML a insertar
       console.log('Arrastrando: ' + this.dragItemType)
@@ -82,7 +107,7 @@ export default {
       // Generamos el MJML según el tipo de bloque
       if (this.dragItemType === 'button') {
         mjmlContent = `
-          <mj-button css-class="mj-button-${blockId}" text-decoration="none" href="https://marca.com" background-color="#1973b8" color="white" editable="true" border-radius="1px" inner-padding="12px 32px">
+          <mj-button css-class="mj-button-${blockId}" text-decoration="none" href="javascript:void(0);" background-color="#1973b8" color="white" editable="true" border-radius="1px" inner-padding="12px 32px">
             Botón
           </mj-button>
         `;
@@ -129,6 +154,13 @@ export default {
       this.selectedRowIndex = null
     },
     selectRow (index) {
+
+      const clickedElement = event.target.closest('.block-wrapper'); // Detecta si el clic fue en un bloque
+
+      if (clickedElement) {
+        // Si el clic fue en un bloque, no seleccionamos la fila
+        return;
+      }
       // Deseleccionamos todas las filas primero
       this.rows.forEach((row, i) => {
         row.isSelected = i === index
@@ -154,7 +186,7 @@ export default {
       console.log(`Fila ${this.selectedRowIndex + 1}: ${numColumns} columnas seleccionadas`)
     },
     handleBlockClick(event) {
-      event.stopPropagation();  // Evitamos que el clic en el bloque seleccione la fila
+      // event.stopPropagation();  // Evitamos que el clic en el bloque seleccione la fila
 
       const blockHandler = event.target.closest('.block-wrapper'); // Selecciona el contenedor más cercano
 
@@ -165,6 +197,12 @@ export default {
         // Resaltar el contenedor seleccionado
         this.highlightBlock(blockHandler);
         this.selectedBlock = blockHandler;
+
+            // Prevenir redirección si el clic es en un enlace
+        const targetAnchor = blockHandler.querySelector('a');
+        if (targetAnchor) {
+          event.preventDefault(); // Evita la redirección
+        }
       }
     },
     highlightBlock(blockHandler) {
@@ -201,6 +239,11 @@ export default {
       if (buttonAnchor) {
         // Cambiamos el atributo href
         buttonAnchor.setAttribute('href', newHref);
+
+        // Prevenir el comportamiento de redirección en el editor
+        buttonAnchor.addEventListener('click', (event) => {
+          event.preventDefault();
+        });
 
         console.log('Href del botón actualizado a:', newHref);
       } else {
@@ -336,14 +379,11 @@ background-color: #a9a9a9;
   outline: none;
 }
 
-::v-deep .selected-block {
-  outline: 2px solid #007bff; /* Borde azul */
+:deep(.selected-block) {
+  outline: 2px solid #007bff;
   box-sizing: border-box;
 }
 
-.selected-block {
-  outline: 2px solid #007bff; /* Aplicamos el borde azul solo cuando está seleccionado */
-}
 
 .properties-panel {
   display: flex;
