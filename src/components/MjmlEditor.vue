@@ -40,7 +40,13 @@
         <button class="property-btn" @click="updateButtonText(buttonText)">Actualizar texto del botón</button>
         <input type="text" v-model="buttonLink" placeholder="Link del botón" />
         <button class="property-btn" @click="updateButtonHref(buttonLink)">Actualizar href del botón</button>
+        <div class="align-buttons">
+          <button class="align-button" @click="updateButtonAlignment('left')">Izda</button>
+          <button class="align-button" @click="updateButtonAlignment('center')">Centro</button>
+          <button class="align-button" @click="updateButtonAlignment('right')">Drcha</button>
+        </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -107,7 +113,7 @@ export default {
       // Generamos el MJML según el tipo de bloque
       if (this.dragItemType === 'button') {
         mjmlContent = `
-          <mj-button css-class="mj-button-${blockId}" text-decoration="none" href="javascript:void(0);" background-color="#1973b8" color="white" editable="true" border-radius="1px" inner-padding="12px 32px">
+          <mj-button css-class="${blockId}" text-decoration="none" href="javascript:void(0);" background-color="#1973b8" color="white" editable="true" border-radius="1px" inner-padding="12px 32px">
             Botón
           </mj-button>
         `;
@@ -252,7 +258,24 @@ export default {
     } else {
       console.log('No hay bloque seleccionado.');
     }
-  }
+  },
+  updateButtonAlignment(alignment) {
+    if (this.selectedBlock) {
+      // En este caso actuamos sobre el bloque en sí
+      console.log(this.selectedBlock)
+
+      const blockId = this.selectedBlock.getAttribute('data-block-id');
+      // Buscar el descendiente con la clase del blockId
+      const targetElement = this.selectedBlock.querySelector(`.${blockId}`);
+      if (targetElement) {
+
+        targetElement.style.textAlign = `-webkit-${alignment}`;
+        console.log(`Alineación del botón actualizada a: ${alignment}`);
+      } else {
+        console.log(`No se encontró un descendiente con la clase .${blockId}`);
+      }
+    }
+    },
   }
 }
 </script>
@@ -291,11 +314,18 @@ margin: 0;
 }
 
 .single-column {
-display: flex;
-justify-content: center;
-align-items: center;
+display: block;
+width: 100%;
+/* justify-content: center;
+align-items: center; */
 height: 100px;
 border: 1px solid #ccc;
+}
+
+.single-column > div {
+  /* Estilos para el div hijo directo de .single-column */
+  width: 100%;
+  max-width: 600px;
 }
 
 .two-columns {
@@ -312,6 +342,11 @@ display: flex;
 justify-content: center;
 align-items: center;
 height: 100px;
+}
+
+.column > div {
+  width: 100%;
+  max-width: 600px;
 }
 
 .single-column, .column {
@@ -375,6 +410,9 @@ background-color: #a9a9a9;
 
 
 .block-wrapper {
+  width: 100%;
+  max-width: 600px;
+  display: block;
   box-sizing: border-box;
   outline: none;
 }
@@ -389,6 +427,16 @@ background-color: #a9a9a9;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.align-buttons {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+.align-button {
+  background-color: #e4c77be7;
 }
 
 </style>
