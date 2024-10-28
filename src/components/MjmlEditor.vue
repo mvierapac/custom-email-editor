@@ -29,8 +29,8 @@
         <InlineEditor
           v-if="editingText"
           :ckeditor="editingText"
-          :initialContent="testCk"
-          @updateContent="updateBlockContent"
+          :initialContent="selectedTextContent"
+          @updateContent="updateTextBlockContent"
         />
       </div>
     </div>
@@ -85,7 +85,7 @@ export default {
       selectedBlock: null,
       buttonText: '',
       buttonLink: '',
-      testCk: '<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">¡Texto MJML!</div>',
+      selectedTextContent: '',
       rows: [
         {
           isSelected: false,
@@ -104,7 +104,6 @@ export default {
   },
   methods: {
     preventLinkNavigation (event) {
-      console.log(event)
       const target = event.target.closest('a') // Verificamos si el clic fue en un enlace
 
       if (target && target.closest('.block-wrapper')) {
@@ -133,7 +132,7 @@ export default {
         `
       } else if (this.dragItemType === 'text') {
         mjmlContent = `
-          <mj-text css-class="mj-text-${blockId}">
+          <mj-text css-class="${blockId}">
             ¡Texto MJML insertado!
           </mj-text>
         `
@@ -185,6 +184,10 @@ export default {
         row.isSelected = i === index
       })
 
+      // Deseleccionar bloque
+      this.removeHighlightBlock()
+      this.selectedBlock = null
+
       // Actualizamos el índice de la fila seleccionada
       this.selectedRowIndex = index
       console.log(`Fila ${index + 1} seleccionada`)
@@ -210,18 +213,32 @@ export default {
       const blockHandler = event.target.closest('.block-wrapper') // Selecciona el contenedor más cercano
 
       if (blockHandler) {
-        this.editingText = true
         const blockId = blockHandler.getAttribute('data-block-id')
+        const isText = blockId.includes('text')
         console.log('Contenedor seleccionado, ID:', blockId)
+        console.log('isText', isText)
 
-        // CKEDITOR TEST
-        this.editingText = true
-        this.currentRow = this.getRowIndexFromBlockId(blockId)
-        this.currentColumn = this.getColumnIndexFromBlockId(blockId)
+
+        // Deseleccionamos todas las filas primero
+        this.rows.forEach((row, i) => {
+          row.isSelected = false
+        })
 
         // Resaltar el contenedor seleccionado
         this.highlightBlock(blockHandler)
         this.selectedBlock = blockHandler
+
+        // CKEDITOR TEST
+        if (isText) {
+          this.currentRow = this.getRowIndexFromBlockId(blockId)
+          this.currentColumn = this.getColumnIndexFromBlockId(blockId)
+          const textContainer = blockHandler.querySelector(`.${blockId}`);
+          const textElement = textContainer.querySelector('div, p');
+          this.selectedTextContent = textElement.innerHTML;
+          this.editingText = true
+        } else {
+          this.editingText = false
+        }
 
         // Prevenir redirección si el clic es en un enlace
         const targetAnchor = blockHandler.querySelector('a')
@@ -230,11 +247,15 @@ export default {
         }
       }
     },
-    highlightBlock (blockHandler) {
+    removeHighlightBlock () {
       // Remover el resaltado de otros bloques
       document.querySelectorAll('.block-wrapper').forEach(block => {
         block.classList.remove('selected-block')
-      })
+      })      
+    },
+    highlightBlock (blockHandler) {
+      // Remover el resaltado de otros bloques
+      this.removeHighlightBlock()
 
       // Añadir el resaltado al bloque seleccionado
       blockHandler.classList.add('selected-block')
@@ -299,11 +320,45 @@ export default {
       this.currentColumn = columnIndex
       this.editingText = true
     },
-    updateBlockContent (newContent) {
-      // Guarda el contenido editado en el bloque correspondiente
-      this.rows[this.currentRow].columns[this.currentColumn].content = newContent
-      this.editingText = false // Detiene la edición después de guardar
-    },
+    updateTextBlockContent(newContent) {
+    console.log('newcontent', newContent);
+
+    // Ajusta el contenido de <p> para que todos tengan margin: 0
+      const adjustedContent = newContent.replace(/<p(\s+[^>]*)?>/g, (match, attrs) => {
+      if (attrs && attrs.includes('style=')) {
+        // Si ya existe un estilo, añade margin: 0 dentro del style actual
+        return match.replace(/style="([^"]*)"/, 'style="$1 margin: 0;"');
+      } else {
+        // Si no tiene estilo, añade uno con margin: 0
+        return `<p style="margin: 0;"${attrs || ''}>`;
+      }
+    });
+
+    console.log(adjustedContent)
+    // Accede al contenido actual de la fila y columna seleccionadas
+    const currentContent = this.rows[this.currentRow].columns[this.currentColumn].content;
+
+    // Crear un contenedor temporal para manipular el contenido HTML
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = currentContent;
+
+    // Selecciona el div objetivo dentro del contenido actual usando la clase dinámica
+    const blockId = this.selectedBlock.getAttribute('data-block-id');
+    const targetDiv = tempContainer.querySelector(`.${blockId} div`);
+
+    if (targetDiv) {
+      // Actualiza solo el contenido de texto en el div sin modificar la estructura
+      targetDiv.innerHTML = adjustedContent;
+
+      // Guarda el contenido actualizado en la estructura de datos del editor
+      this.rows[this.currentRow].columns[this.currentColumn].content = tempContainer.innerHTML;
+    } else {
+      console.log("No se encontró el div objetivo para actualizar el contenido.");
+    }
+
+    // Detiene la edición después de actualizar el texto
+    // this.editingText = false;
+  },
     // Métodos adicionales para encontrar la fila y columna de un bloque dado su blockId
     getRowIndexFromBlockId (blockId) {
       for (let i = 0; i < this.rows.length; i++) {

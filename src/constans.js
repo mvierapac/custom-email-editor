@@ -1,3 +1,25 @@
+import {
+	AccessibilityHelp,
+	Alignment,
+	AutoLink,
+	Autosave,
+	Bold,
+	Essentials,
+	FontBackgroundColor,
+	FontColor,
+	FontFamily,
+	FontSize,
+	Italic,
+	Link,
+	Paragraph,
+	SelectAll,
+	Strikethrough,
+	Underline,
+	Undo,
+    Mention,
+    Font
+} from 'ckeditor5';
+
 export const colors = [
     { label: 'navy', color: '#072146' },
     { label: 'dark-navy', color: '#041836' },
@@ -68,3 +90,102 @@ export const colors = [
     { label: 'medium-purple', color: '#7C6AC7' },
     { label: 'light-purple', color: '#B6A8EE' },
     { label: 'white-purple', color: '#DDD7F7' }]
+
+
+export const ckeditorConfig = {
+    plugins: [Bold, Link, Italic, Underline, Mention, Paragraph, Alignment, Font],
+    toolbar: [
+      'fontsize', 'fontColor', 'fontBackgroundColor',
+      '|',
+      'alignment:left',
+      'alignment:right',
+      'alignment:center',
+      'alignment:justify',
+      '|',
+      'bold', 'italic', 'underline',
+      '|',
+      'link'
+    ],
+    fontSize: {
+      options: [
+        { title: 9, model: '9px' },
+        { title: 10, model: '10px' },
+        { title: 11, model: '11px' },
+        { title: 12, model: '12px' },
+        { title: 13, model: '13px' },
+        { title: 14, model: '14px' },
+        { title: 15, model: '15px' },
+        { title: 17, model: '17px' },
+        { title: 20, model: '20px' }]
+    },
+    fontColor: {
+      columns: 8,
+      documentColors: colors.length,
+      colors
+    }
+  }
+
+  export const testConfig = {
+    toolbar: {
+        items: [
+            'undo',
+            'redo',
+            '|',
+            'fontSize',
+            'fontFamily',
+            'fontColor',
+            'fontBackgroundColor',
+            '|',
+            'bold',
+            'italic',
+            'underline',
+            'strikethrough',
+            '|',
+            'link',
+            '|',
+            'alignment'
+        ],
+        shouldNotGroupWhenFull: false
+    },
+    plugins: [
+        AccessibilityHelp,
+        Alignment,
+        AutoLink,
+        Autosave,
+        Bold,
+        Essentials,
+        FontBackgroundColor,
+        FontColor,
+        FontFamily,
+        FontSize,
+        Italic,
+        Link,
+        Paragraph,
+        SelectAll,
+        Strikethrough,
+        Underline,
+        Undo
+    ],
+    fontFamily: {
+        supportAllValues: true
+    },
+    fontSize: {
+        options: [10, 12, 14, 'default', 18, 20, 22],
+        supportAllValues: true
+    },
+    language: 'es',
+    link: {
+        addTargetToExternalLinks: true,
+        defaultProtocol: 'https://',
+        decorators: {
+            toggleDownloadable: {
+                mode: 'manual',
+                label: 'Downloadable',
+                attributes: {
+                    download: 'file'
+                }
+            }
+        }
+    },
+    placeholder: 'Type or paste your content here!',
+};
