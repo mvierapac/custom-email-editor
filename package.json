@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-vue": "^7.2.0",
+    "ckeditor5": "^43.2.0",
     "mjml-browser": "^4.15.3",
     "vue": "^3.4.37",
     "vue-email-editor": "^2.1.1"
@@ -17,6 +19,8 @@
     "@eslint/js": "^9.13.0",
     "@vitejs/plugin-vue": "^5.1.2",
     "eslint": "^9.13.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-standard": "4.1.0",
     "eslint-plugin-vue": "^9.29.1",
     "globals": "^15.11.0",
     "mjml": "^4.15.3",

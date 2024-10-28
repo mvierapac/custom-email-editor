@@ -25,6 +25,13 @@
             </div>
           </div>
         </div>
+            <!-- Editor de texto enriquecido inline en el lienzo -->
+        <InlineEditor
+          v-if="editingText"
+          :ckeditor="editingText"
+          :initialContent="testCk"
+          @updateContent="updateBlockContent"
+        />
       </div>
     </div>
     <div class="lateral-panel">
@@ -53,22 +60,24 @@
 
 <script>
 import mjml2html from 'mjml-browser'
+import InlineEditor from './InlineEditor.vue'
 
 export default {
 
-  mounted() {
-      // Intercepta todos los clics en enlaces dentro del editor
-      console.log('mounted')
-      this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation);
+  mounted () {
+    // Intercepta todos los clics en enlaces dentro del editor
+    console.log('mounted')
+    this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation)
+  },
 
-    },
+  beforeUnmount () {
+    // Elimina el listener al desmontar el componente
+    this.$refs.editorContainer.removeEventListener('click', this.preventLinkNavigation)
+  },
 
-    beforeUnmount() {
-      // Elimina el listener al desmontar el componente
-      this.$refs.editorContainer.removeEventListener('click', this.preventLinkNavigation);
-
-    },
-
+  components: {
+    InlineEditor
+  },
   data () {
     return {
       selectedRowIndex: null, // Almacena el índice de la fila seleccionada
@@ -76,6 +85,7 @@ export default {
       selectedBlock: null,
       buttonText: '',
       buttonLink: '',
+      testCk: '<div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;">¡Texto MJML!</div>',
       rows: [
         {
           isSelected: false,
@@ -85,44 +95,48 @@ export default {
           isSelected: false,
           columns: [{ content: '' }] // Definimos columnas con contenido vacío
         }
-      ]
+      ],
+      // CKEDITOR
+      editingText: false,
+      currentRow: null,
+      currentColumn: null
     }
   },
   methods: {
-    preventLinkNavigation(event) {
+    preventLinkNavigation (event) {
       console.log(event)
-    const target = event.target.closest('a'); // Verificamos si el clic fue en un enlace
+      const target = event.target.closest('a') // Verificamos si el clic fue en un enlace
 
-    if (target && target.closest('.block-wrapper')) {
+      if (target && target.closest('.block-wrapper')) {
       // Si el enlace está dentro del editor (e.g., en un .block-wrapper), prevenimos la redirección
-      event.preventDefault();
-      console.log('Redirección prevenida en el editor.');
-    }
-  },
+        event.preventDefault()
+        console.log('Redirección prevenida en el editor.')
+      }
+    },
 
     onDragStart (event) {
       this.dragItemType = event.target.getAttribute('data-type') // Obtiene el tipo de MJML a insertar
       console.log('Arrastrando: ' + this.dragItemType)
     },
-    onDrop(rowIndex, columnIndex) {
-      if (!this.dragItemType) return;
+    onDrop (rowIndex, columnIndex) {
+      if (!this.dragItemType) return
 
-      let mjmlContent = '';
-      const blockId = `${this.dragItemType}-${Date.now()}`;
-      
+      let mjmlContent = ''
+      const blockId = `${this.dragItemType}-${Date.now()}`
+
       // Generamos el MJML según el tipo de bloque
       if (this.dragItemType === 'button') {
         mjmlContent = `
           <mj-button css-class="${blockId}" text-decoration="none" href="javascript:void(0);" background-color="#1973b8" color="white" editable="true" border-radius="1px" inner-padding="12px 32px">
             Botón
           </mj-button>
-        `;
+        `
       } else if (this.dragItemType === 'text') {
         mjmlContent = `
           <mj-text css-class="mj-text-${blockId}">
             ¡Texto MJML insertado!
           </mj-text>
-        `;
+        `
       }
 
       // Convertir MJML a HTML
@@ -136,20 +150,20 @@ export default {
             </mj-section>
           </mj-body>
         </mjml>
-      `);
+      `)
 
       // Envolver el HTML en un contenedor que sea clickeable
       const wrappedHtml = `
         <div class="block-wrapper" data-block-id="${blockId}" @click="handleBlockClick">
           ${html}
         </div>
-      `;
+      `
 
       // Actualizamos el contenido de la columna con el contenedor envuelto
-      this.rows[rowIndex].columns[columnIndex].content = wrappedHtml;
+      this.rows[rowIndex].columns[columnIndex].content = wrappedHtml
 
       // Reseteamos el tipo de bloque arrastrado
-      this.dragItemType = null;
+      this.dragItemType = null
     },
     clearMjmlBlock () {
       // Limpiamos todas las filas
@@ -160,12 +174,11 @@ export default {
       this.selectedRowIndex = null
     },
     selectRow (index) {
-
-      const clickedElement = event.target.closest('.block-wrapper'); // Detecta si el clic fue en un bloque
+      const clickedElement = event.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
 
       if (clickedElement) {
         // Si el clic fue en un bloque, no seleccionamos la fila
-        return;
+        return
       }
       // Deseleccionamos todas las filas primero
       this.rows.forEach((row, i) => {
@@ -191,91 +204,122 @@ export default {
 
       console.log(`Fila ${this.selectedRowIndex + 1}: ${numColumns} columnas seleccionadas`)
     },
-    handleBlockClick(event) {
+    handleBlockClick (event) {
       // event.stopPropagation();  // Evitamos que el clic en el bloque seleccione la fila
 
-      const blockHandler = event.target.closest('.block-wrapper'); // Selecciona el contenedor más cercano
+      const blockHandler = event.target.closest('.block-wrapper') // Selecciona el contenedor más cercano
 
       if (blockHandler) {
-        const blockId = blockHandler.getAttribute('data-block-id');
-        console.log('Contenedor seleccionado, ID:', blockId);
+        this.editingText = true
+        const blockId = blockHandler.getAttribute('data-block-id')
+        console.log('Contenedor seleccionado, ID:', blockId)
+
+        // CKEDITOR TEST
+        this.editingText = true
+        this.currentRow = this.getRowIndexFromBlockId(blockId)
+        this.currentColumn = this.getColumnIndexFromBlockId(blockId)
 
         // Resaltar el contenedor seleccionado
-        this.highlightBlock(blockHandler);
-        this.selectedBlock = blockHandler;
+        this.highlightBlock(blockHandler)
+        this.selectedBlock = blockHandler
 
-            // Prevenir redirección si el clic es en un enlace
-        const targetAnchor = blockHandler.querySelector('a');
+        // Prevenir redirección si el clic es en un enlace
+        const targetAnchor = blockHandler.querySelector('a')
         if (targetAnchor) {
-          event.preventDefault(); // Evita la redirección
+          event.preventDefault() // Evita la redirección
         }
       }
     },
-    highlightBlock(blockHandler) {
+    highlightBlock (blockHandler) {
       // Remover el resaltado de otros bloques
       document.querySelectorAll('.block-wrapper').forEach(block => {
-        block.classList.remove('selected-block');
-      });
+        block.classList.remove('selected-block')
+      })
 
       // Añadir el resaltado al bloque seleccionado
-      blockHandler.classList.add('selected-block');
+      blockHandler.classList.add('selected-block')
     },
 
-    updateButtonText(newText) {
-    if (this.selectedBlock) {
+    updateButtonText (newText) {
+      if (this.selectedBlock) {
       // Buscamos el mj-button dentro del bloque seleccionado
-      console.log(this.selectedBlock)
-      const button = this.selectedBlock.querySelector('a');
+        console.log(this.selectedBlock)
+        const button = this.selectedBlock.querySelector('a')
 
-      if (button) {
+        if (button) {
         // Cambiamos el texto del botón
-        button.innerHTML = newText;
+          button.innerHTML = newText
 
-        console.log('Texto del botón actualizado a:', newText);
-      } else {
-        console.log('No se encontró un botón en el bloque seleccionado.');
+          console.log('Texto del botón actualizado a:', newText)
+        } else {
+          console.log('No se encontró un botón en el bloque seleccionado.')
+        }
       }
-    }
     },
-    updateButtonHref(newHref) {
-    if (this.selectedBlock) {
+    updateButtonHref (newHref) {
+      if (this.selectedBlock) {
       // Buscamos el <a> dentro del botón seleccionado
-      const buttonAnchor = this.selectedBlock.querySelector('a');
+        const buttonAnchor = this.selectedBlock.querySelector('a')
 
-      if (buttonAnchor) {
+        if (buttonAnchor) {
         // Cambiamos el atributo href
-        buttonAnchor.setAttribute('href', newHref);
+          buttonAnchor.setAttribute('href', newHref)
 
-        // Prevenir el comportamiento de redirección en el editor
-        buttonAnchor.addEventListener('click', (event) => {
-          event.preventDefault();
-        });
+          // Prevenir el comportamiento de redirección en el editor
+          buttonAnchor.addEventListener('click', (event) => {
+            event.preventDefault()
+          })
 
-        console.log('Href del botón actualizado a:', newHref);
+          console.log('Href del botón actualizado a:', newHref)
+        } else {
+          console.log('No se encontró un <a> en el bloque seleccionado.')
+        }
       } else {
-        console.log('No se encontró un <a> en el bloque seleccionado.');
+        console.log('No hay bloque seleccionado.')
       }
-    } else {
-      console.log('No hay bloque seleccionado.');
-    }
-  },
-  updateButtonAlignment(alignment) {
-    if (this.selectedBlock) {
-      // En este caso actuamos sobre el bloque en sí
-      console.log(this.selectedBlock)
-
-      const blockId = this.selectedBlock.getAttribute('data-block-id');
-      // Buscar el descendiente con la clase del blockId
-      const targetElement = this.selectedBlock.querySelector(`.${blockId}`);
-      if (targetElement) {
-
-        targetElement.style.textAlign = `-webkit-${alignment}`;
-        console.log(`Alineación del botón actualizada a: ${alignment}`);
-      } else {
-        console.log(`No se encontró un descendiente con la clase .${blockId}`);
-      }
-    }
     },
+    updateButtonAlignment (alignment) {
+      if (this.selectedBlock) {
+      // En este caso actuamos sobre el bloque en sí
+        console.log(this.selectedBlock)
+
+        const blockId = this.selectedBlock.getAttribute('data-block-id')
+        // Buscar el descendiente con la clase del blockId
+        const targetElement = this.selectedBlock.querySelector(`.${blockId}`)
+        if (targetElement) {
+          targetElement.style.textAlign = `-webkit-${alignment}`
+          console.log(`Alineación del botón actualizada a: ${alignment}`)
+        } else {
+          console.log(`No se encontró un descendiente con la clase .${blockId}`)
+        }
+      }
+    },
+    editText (rowIndex, columnIndex) {
+      this.currentRow = rowIndex
+      this.currentColumn = columnIndex
+      this.editingText = true
+    },
+    updateBlockContent (newContent) {
+      // Guarda el contenido editado en el bloque correspondiente
+      this.rows[this.currentRow].columns[this.currentColumn].content = newContent
+      this.editingText = false // Detiene la edición después de guardar
+    },
+    // Métodos adicionales para encontrar la fila y columna de un bloque dado su blockId
+    getRowIndexFromBlockId (blockId) {
+      for (let i = 0; i < this.rows.length; i++) {
+        if (this.rows[i].columns.some(column => column.content.includes(blockId))) {
+          return i
+        }
+      }
+      return null
+    },
+    getColumnIndexFromBlockId (blockId) {
+      const rowIndex = this.getRowIndexFromBlockId(blockId)
+      if (rowIndex !== null) {
+        return this.rows[rowIndex].columns.findIndex(column => column.content.includes(blockId))
+      }
+      return null
+    }
   }
 }
 </script>
@@ -408,7 +452,6 @@ background-color: #a9a9a9;
   width: 100%; /* Asegura que el contenido ocupe todo el ancho */
 }
 
-
 .block-wrapper {
   width: 100%;
   max-width: 600px;
@@ -421,7 +464,6 @@ background-color: #a9a9a9;
   outline: 2px solid #007bff;
   box-sizing: border-box;
 }
-
 
 .properties-panel {
   display: flex;
@@ -440,4 +482,3 @@ background-color: #a9a9a9;
 }
 
 </style>
-
