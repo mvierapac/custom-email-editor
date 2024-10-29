@@ -72,6 +72,84 @@ button:focus-visible {
     background-color: #e4c77be7;
   }
 
+
+  /* new inputs for properties  */
+  .input-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #aaa; /* Borde más claro cuando no está en focus */
+    border-radius: 4px;
+    overflow: hidden;
+    width: 100%;
+    transition: border-color 0.3s ease; /* Transición suave para el cambio de color */
+  }
+  
+  .input-container label {
+    background-color: #f0f0f0;
+    padding: 8px 12px;
+    font-weight: bold;
+    color: #333;
+    border-right: 1px solid #aaa;
+    flex-shrink: 0;
+  }
+  
+  .input-container input {
+    border: none;
+    outline: none;
+    padding: 8px 12px;
+    flex-grow: 1;
+    font-size: 16px;
+  }
+  
+  /* Cambiar el color del borde al hacer focus en el input */
+  .input-container input:focus {
+    border: none;
+    outline: none;
+  }
+  
+  .input-container:focus-within {
+    border-color: #333; /* Color más oscuro cuando el input está en focus */
+  }
+  
+  .input-container input::placeholder {
+    color: #999;
+  }
+
+  /* tabs columns */
+
+  .column-tabs {
+    display: flex;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .tab {
+    padding: 8px 12px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  
+  .tab:hover {
+    color: #333;
+  }
+  
+  .active-tab {
+    color: #333;
+  }
+  
+  .active-tab::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #333;
+  }
+
 /* ckeditor */
 
 @media print {
