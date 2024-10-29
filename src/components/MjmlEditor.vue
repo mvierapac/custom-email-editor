@@ -2,13 +2,39 @@
   <div class="wrapper">
     <div>
       <button @click="clearMjmlBlock">Limpiar Lienzo</button>
+      <button @click="addRow">Add Row</button>
       <div class="canvas" ref="editorContainer">
         <div
           v-for="(row, rowIndex) in rows"
           :key="rowIndex"
           :class="['row', { 'row-selected': row.isSelected }]"
           @click="selectRow(rowIndex)"
+          @dragover.prevent="handleDragOverRow(rowIndex)"
+          @drop="handleDropRow(rowIndex)"
         >
+          <!-- Indicador de arrastre solo visible en la fila seleccionada -->
+          <div 
+            v-if="row.isSelected" 
+            class="drag-handle" 
+            @mousedown.stop
+            @dragstart="handleDragStartRow($event, rowIndex)"
+            draggable="true"
+          >
+            <span class="drag-icon">⠿</span>
+          </div>
+
+          <!-- Panel de acciones de la fila -->
+          <div 
+            v-if="row.isSelected"
+            class="row-action-panel"
+          >
+            <div class="row-action-icon delete-icon" @click="handleDeleteRow(rowIndex)">
+              🗑️
+            </div>
+            <div class="row-action-icon copy-icon" @click="handleCopyRow(rowIndex)">
+              📄
+            </div>
+          </div>
           <!-- Renderizado dinámico de columnas -->
           <div v-if="row.columns.length === 1" class="single-column" :style="{ backgroundColor: rows[rowIndex].columns[0].backgroundColor || '#f0f0f0' }" @dragover.prevent @drop="onDrop(rowIndex, 0)" @click="handleBlockClick($event)">
             <div v-if="row.columns[0].content" v-html="row.columns[0].content"></div>
@@ -59,7 +85,7 @@
             <div class="color-picker">
               <label>Background Color:</label>
               <div class="color-preview" :style="{ backgroundColor: columnBackgroundColor }" @click="triggerColorPicker"></div>
-              <input type="color" v-model="columnBackgroundColor" @input="updateColumnBackgroundColor" ref="colorInput" style="display: none;">
+              <input type="color" v-model="columnBackgroundColor" @input="updateColumnBackgroundColor" ref="colorInput" style="visibility: hidden;">
             </div>
         </div>
       <div class="properties-panel">
@@ -131,16 +157,13 @@ export default {
         {
           isSelected: false,
           columns: [{ content: '', backgroundColor: '#f0f0f0' }] // Definimos columnas con contenido vacío
-        },
-        {
-          isSelected: false,
-          columns: [{ content: '', backgroundColor: '#f0f0f0' }] // Definimos columnas con contenido vacío
         }
       ],
       // CKEDITOR
       editingText: false,
       currentRow: null,
-      currentColumn: null
+      currentColumn: null,
+      draggedRowIndex: null,
     }
   },
   methods: {
@@ -207,11 +230,41 @@ export default {
     },
     clearMjmlBlock () {
       // Limpiamos todas las filas
-      this.rows = this.rows.map(row => ({
-        isSelected: false,
-        columns: [{ content: '', backgroundColor: '#f0f0f0' }] // Reiniciar columnas vacías
-      }))
+      this.rows = [
+        {
+          isSelected: false,
+          columns: [{ content: '', backgroundColor: '#f0f0f0' }]
+        }
+      ];
       this.selectedRowIndex = null
+    },
+    addRow() {
+      this.rows.push({
+        isSelected: false,
+        columns: [{ content: '', backgroundColor: '#f0f0f0' }]
+      });
+    },
+    handleDeleteRow(rowIndex) {
+      console.log(`Eliminar fila ${rowIndex}`);
+      if (this.rows.length == 1) {
+        return
+      }
+      this.rows.splice(rowIndex, 1);
+      
+      // Reiniciar la selección de fila después de eliminarla
+      this.selectedRowIndex = null;
+      this.selectedRowColumns = 0;
+      this.activeColumn = null;
+    },
+    handleCopyRow(rowIndex) {
+      console.log(`Copiar fila ${rowIndex}`);
+      // Clonar la fila seleccionada
+      const copiedRow = JSON.parse(JSON.stringify(this.rows[rowIndex]));
+
+      // Insertar la fila copiada en la posición siguiente
+      this.rows.splice(rowIndex + 1, 0, copiedRow);
+
+      console.log(`Fila ${rowIndex} copiada en la posición ${rowIndex + 1}.`);
     },
     selectRow (index) {
       const clickedElement = event.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
@@ -435,10 +488,47 @@ export default {
       this.$refs.colorInput.click();
     },
     updateColumnBackgroundColor() {
-    if (this.selectedRowIndex !== null && this.activeColumn !== null) {
-      this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = this.columnBackgroundColor;
-    }
-  },
+      if (this.selectedRowIndex !== null && this.activeColumn !== null) {
+        this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = this.columnBackgroundColor;
+      }
+    },
+
+    ////// Drag and drops on rows /////
+    handleDragStartRow(dragEvent, index) {
+      this.draggedRowIndex = index;
+
+      // Clonar el elemento de la fila y usarlo como imagen de arrastre
+      const rowElement = dragEvent.target.closest('.row');
+      const rowClone = rowElement.cloneNode(true);
+      rowClone.style.position = 'absolute';
+      rowClone.style.top = '-9999px';
+      rowClone.style.left = '-9999px';
+      document.body.appendChild(rowClone);
+
+      // Ajustar la posición del punto de arrastre dentro del clon
+      const offsetX = 250; // Ajusta este valor para mover el clon hacia la izquierda
+      const offsetY = rowClone.offsetHeight / 2; // Centrado verticalmente
+
+      // Usar el clon como imagen de arrastre con desplazamiento
+      dragEvent.dataTransfer.setDragImage(rowClone, offsetX, offsetY);
+
+      // Remover el clon después de un pequeño retraso para asegurarse de que se usa
+      setTimeout(() => {
+        document.body.removeChild(rowClone);
+      }, 0);
+    },
+    handleDragOverRow(index) {
+      // Solo prevenir el comportamiento por defecto
+    },
+    handleDropRow(index) {
+      // Movemos la fila a la nueva posición
+      if (this.draggedRowIndex !== null && this.draggedRowIndex !== index) {
+        const draggedRow = this.rows.splice(this.draggedRowIndex, 1)[0];
+        this.rows.splice(index, 0, draggedRow);
+      }
+      // Resetear el índice arrastrado
+      this.draggedRowIndex = null;
+    },
   }
 }
 </script>
@@ -459,21 +549,71 @@ export default {
 }
 
 .row {
-border: 1px dashed #1e90ff; /* Borde punteado */
-background-color: #e6f2fb;  /* Azul claro */
-padding: 20px;
-text-align: center;
-cursor: pointer;
+  position: relative; /* Para posicionar el indicador de arrastre */
+  border: 1px dashed #1e90ff; /* Borde punteado */
+  background-color: #e6f2fb;  /* Azul claro */
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
 }
 
 .row-selected {
-border: 1px solid #1e3a8a; /* Borde sólido azul oscuro */
-background-color: #dbeafe;  /* Azul más oscuro */
+  border: 1px solid #1e3a8a; /* Borde sólido azul oscuro */
+  background-color: #dbeafe;  /* Azul más oscuro */
+}
+
+/* Indicador de arrastre */
+.drag-handle {
+  position: absolute;
+  top: 50%;
+  right: 0px;
+  transform: translateY(-50%);
+  background-color: #6cb5f9;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+  cursor:grab;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.drag-icon {
+  font-size: 20px;
+}
+
+/* Estilo para el recuadro de acciones */
+.row-action-panel {
+  z-index: 4;
+  position: absolute;
+  top: 100%;
+  right: 0px; /* Ajusta la posición del recuadro según sea necesario */
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilo para los iconos dentro del recuadro */
+.row-action-icon {
+  font-size: 18px;
+  cursor: pointer;
+  color: #333;
+}
+
+.row-action-icon:hover {
+  color: #007bff; /* Color al pasar el cursor */
 }
 
 .row p {
-color: #1e90ff;
-margin: 0;
+  color: #1e90ff;
+  margin: 0;
 }
 
 .single-column {
