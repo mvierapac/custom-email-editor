@@ -7,7 +7,7 @@
         <div
           v-for="(row, rowIndex) in rows"
           :key="rowIndex"
-          :class="['row', { 'row-selected': row.isSelected }]"
+          :class="['row', { 'row-selected': row.isSelected }, getColumnClass(row.columns.length, row.columns[0].width)]"
           @click="selectRow(rowIndex)"
           @dragover.prevent="handleDragOverRow(rowIndex)"
           @drop="handleDropRow(rowIndex)"
@@ -35,19 +35,19 @@
               📄
             </div>
           </div>
-          <!-- Renderizado dinámico de columnas -->
-          <div v-if="row.columns.length === 1" class="single-column" :style="{ backgroundColor: rows[rowIndex].columns[0].backgroundColor || '#f0f0f0' }" @dragover.prevent @drop="onDrop(rowIndex, 0)" @click="handleBlockClick($event)">
-            <div v-if="row.columns[0].content" v-html="row.columns[0].content"></div>
-            <p v-else>1 Column selected</p>
-          </div>
-          <div v-else class="two-columns">
-            <div class="column" :style="{ backgroundColor: rows[rowIndex].columns[0].backgroundColor || '#f0f0f0' }" @dragover.prevent @drop="onDrop(rowIndex, 0)" @click="handleBlockClick($event)">
-              <div v-if="row.columns[0].content" v-html="row.columns[0].content"></div>
-              <p v-else>Columna 1</p>
-            </div>
-            <div class="column" :style="{ backgroundColor: rows[rowIndex].columns[1].backgroundColor || '#f0f0f0' }" @dragover.prevent @drop="onDrop(rowIndex, 1)" @click="handleBlockClick($event)">
-              <div v-if="row.columns[1].content" v-html="row.columns[1].content"></div>
-              <p v-else>Columna 2</p>
+          <!-- Renderización dinámica de columnas -->
+          <div class="columns-container">
+            <div
+              v-for="(column, columnIndex) in row.columns"
+              :key="columnIndex"
+              class="column"
+              :style="{ backgroundColor: column.backgroundColor || '#f0f0f0' }"
+              @dragover.prevent
+              @drop="onDrop(rowIndex, columnIndex)"
+              @click="handleBlockClick($event)"
+            >
+              <div v-if="column.content" v-html="column.content"></div>
+              <p v-else>Columna {{ columnIndex + 1 }}</p>
             </div>
           </div>
         </div>
@@ -61,8 +61,14 @@
       </div>
     </div>
     <div class="lateral-panel">
-      <button class="column-button" @click="setColumns(1)"> 100% </button>
-      <button class="column-button" @click="setColumns(2)"> 2*50% </button>
+      <div class="configure-columns-panel">
+        <button class="column-button" @click="configureColumns(1)"> 100% </button>
+        <button class="column-button" @click="configureColumns(2)"> 2*50% </button>
+        <button class="column-button" @click="configureColumns(2, [67, 33])"> 67 / 33 </button>
+        <button class="column-button" @click="configureColumns(2, [33, 67])"> 33 / 67 </button>
+        <button class="column-button" @click="configureColumns(3)"> 33*3 </button>
+        <button class="column-button" @click="configureColumns(4)"> 25*4 </button>
+      </div>
       <div class="tool-panel">
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="button">Arrastra MJ-Button</div>
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="text">Arrastra Texto MJML</div>
@@ -625,6 +631,49 @@ export default {
       // Resetear el índice arrastrado
       this.draggedRowIndex = null;
     },
+      // Método para obtener la clase CSS correcta según el número de columnas y proporciones
+    getColumnClass(numColumns, firstColumnWidth) {
+      console.log(firstColumnWidth)
+      if (numColumns === 1) {
+        return 'single-column';
+      } else if (numColumns === 2) {
+        if (firstColumnWidth && firstColumnWidth === 67) {
+          return 'two-columns two-columns-67-33';
+        } else if (firstColumnWidth && firstColumnWidth === 33) {
+          return 'two-columns two-columns-33-67';
+        } else {
+          return 'two-columns';
+        }
+      } else if (numColumns === 3) {
+        return 'three-columns';
+      } else if (numColumns === 4) {
+        return 'four-columns';
+      }
+      return ''; // Clase vacía si no se cumple ninguna condición
+    },
+      // Método para configurar el número de columnas y sus proporciones
+  configureColumns(numColumns, proportions = []) {
+    if (this.selectedRowIndex === null) {
+      console.log("Por favor, selecciona una fila primero.");
+      return;
+    }
+
+    // Crear la nueva configuración de columnas
+    const newColumns = Array.from({ length: numColumns }, (_, i) => ({
+      content: '',
+      backgroundColor: '#f0f0f0',
+      width: proportions[i] || (100 / numColumns) + '%', // Asignar proporción o dividir en partes iguales
+    }));
+
+    // Asignar las columnas configuradas a la fila seleccionada
+    this.rows[this.selectedRowIndex].columns = newColumns;
+
+    // Actualizar las variables de estado
+    this.selectedRowColumns = numColumns;
+    this.activeColumn = 0;
+
+    console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`);
+  },
   }
 }
 </script>
@@ -712,22 +761,6 @@ export default {
   margin: 0;
 }
 
-.single-column {
-display: block;
-width: 100%;
-/* justify-content: center;
-align-items: center; */
-height: 100px;
-border: 1px solid #ccc;
-background-color: #f0f0f0;
-}
-
-.single-column > div {
-  /* Estilos para el div hijo directo de .single-column */
-  width: 100%;
-  max-width: 600px;
-}
-
 .two-columns {
 display: flex;
 justify-content: space-between;
@@ -749,13 +782,6 @@ height: 100px;
   max-width: 600px;
 }
 
-.single-column, .column {
-border: 1px dashed #ccc;
-height: 100px;
-display: flex;
-align-items: center;
-justify-content: center;
-}
 
 .column p {
 margin: 0;
@@ -780,6 +806,14 @@ cursor: grab;
   align-items: flex-start;
 }
 
+.configure-columns-panel {
+  display:  flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 .column-button {
 width: 45%;
 padding: 10px 15px;
@@ -796,17 +830,7 @@ transition: background-color 0.3s ease;
 background-color: #a9a9a9;
 }
 
-.single-column, .column {
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #ccc;
-  padding: 10px; /* Agrega un padding para separar el contenido del borde */
-  height: auto; /* Deja que la altura se ajuste automáticamente */
-  flex-direction: column; /* Asegura que los elementos se apilen verticalmente */
-  width: 100%; /* Asegura que el contenido ocupe todo el ancho */
-}
+ 
 
 .block-wrapper {
   width: 100%;
@@ -868,6 +892,77 @@ background-color: #a9a9a9;
 
 .tool-panel {
   width: 100%;
+}
+
+/* Estilos generales para la fila */
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.columns-container {
+  width: 600px;
+  margin: 0 auto; /* Centra el contenedor en la fila */
+  display: flex;
+  gap: 0; /* Sin espacio entre columnas */
+}
+
+/* Configuración para una sola columna */
+.single-column {
+  display: flex;
+  justify-content: center;
+}
+
+.single-column .column {
+  width: 100%;
+}
+
+/* Configuración para dos columnas iguales */
+.two-columns {
+  display: flex;
+  gap: 10px;
+}
+
+.two-columns .column {
+  width: 50%;
+}
+
+/* Configuración para dos columnas con proporciones 67/33 */
+.two-columns-67-33 .column:nth-child(1) {
+  width: 67%;
+}
+
+.two-columns-67-33 .column:nth-child(2) {
+  width: 33%;
+}
+
+/* Configuración para dos columnas con proporciones 33/67 */
+.two-columns-33-67 .column:nth-child(1) {
+  width: 33%;
+}
+
+.two-columns-33-67 .column:nth-child(2) {
+  width: 67%;
+}
+
+/* Configuración para tres columnas */
+.three-columns {
+  display: flex;
+  gap: 10px;
+}
+
+.three-columns .column {
+  width: 33.33%;
+}
+
+/* Configuración para cuatro columnas */
+.four-columns {
+  display: flex;
+  gap: 10px;
+}
+
+.four-columns .column {
+  width: 25%;
 }
 
 </style>
