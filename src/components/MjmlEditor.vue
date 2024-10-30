@@ -147,6 +147,8 @@ export default {
       selectedRowIndex: null, // Almacena el índice de la fila seleccionada
       selectedRowColumns: 0,
       activeColumn: null, // Columna actualmente seleccionada en el panel
+      selectedBlockRowIndex: null, // Fila del bloque seleccionado
+      selectedBlockActiveColumn: null, // Columna del bloque seleccionado
       dragItemType: null,
       selectedBlock: null,
       columnBackgroundColor: '#f0f0f0',
@@ -258,11 +260,41 @@ export default {
     },
     handleCopyRow(rowIndex) {
       console.log(`Copiar fila ${rowIndex}`);
-      // Clonar la fila seleccionada
-      const copiedRow = JSON.parse(JSON.stringify(this.rows[rowIndex]));
+      const originalRow = this.rows[rowIndex];
+  
+      // Clonar la fila original para modificarla sin afectar al original
+      const clonedRow = JSON.parse(JSON.stringify(originalRow));
 
-      // Insertar la fila copiada en la posición siguiente
-      this.rows.splice(rowIndex + 1, 0, copiedRow);
+      // Recorrer cada columna y actualizar los `data-block-id` y clases dentro del contenido
+      clonedRow.columns = clonedRow.columns.map(column => {
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = column.content;
+
+        // Selecciona todos los elementos que tengan `data-block-id` para actualizar sus identificadores
+        const blocks = tempContainer.querySelectorAll('[data-block-id]');
+        blocks.forEach(block => {
+          const oldBlockId = block.getAttribute('data-block-id');
+          const prefix = oldBlockId.split('-')[0]; // Obtener el prefijo (button, text, image, etc.)
+          const newBlockId = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`; // Generar un nuevo ID único con el prefijo adecuado
+
+          // Actualizar el `data-block-id` en el contenedor
+          block.setAttribute('data-block-id', newBlockId);
+
+          // Solo actualizar las clases en los hijos que tienen `oldBlockId` como clase
+          const childElements = block.querySelectorAll(`.${oldBlockId}`);
+          childElements.forEach(child => {
+            child.classList.remove(oldBlockId);
+            child.classList.add(newBlockId);
+          });
+        });
+
+        // Actualizar el contenido de la columna con los nuevos IDs
+        column.content = tempContainer.innerHTML;
+        return column;
+      });
+
+      // Insertar la fila clonada justo después de la fila original
+      this.rows.splice(rowIndex + 1, 0, clonedRow);
 
       console.log(`Fila ${rowIndex} copiada en la posición ${rowIndex + 1}.`);
     },
@@ -315,6 +347,13 @@ export default {
 
       if (blockHandler) {
         const blockId = blockHandler.getAttribute('data-block-id')
+        // Obtener los índices de fila y columna sin cambiar la selección visual
+        const { rowIndex, columnIndex } = this.getRowAndColumnOfBlock(blockId);
+        if (rowIndex !== null && columnIndex !== null) {
+          this.selectedBlockRowIndex = rowIndex;
+          this.selectedBlockActiveColumn = columnIndex;
+        }
+        // Comprobar si es texto o botón ... añadir más comprobaciones más adelante
         const isText = blockId.includes('text')
         const isButton = blockId.includes('button');
         console.log('Contenedor seleccionado, ID:', blockId)
@@ -359,6 +398,17 @@ export default {
         this.selectedRowColumns = null
       }
     },
+    // Need to know the row and column of the block selected without selecting the row
+    getRowAndColumnOfBlock(blockId) {
+      for (let rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
+        const columnIndex = this.rows[rowIndex].columns.findIndex(column => column.content.includes(blockId));
+        if (columnIndex !== -1) {
+          return { rowIndex, columnIndex };
+        }
+      }
+      return { rowIndex: null, columnIndex: null };
+    },
+
     removeHighlightBlock () {
       // Remover el resaltado de otros bloques
       document.querySelectorAll('.block-wrapper').forEach(block => {
@@ -377,10 +427,28 @@ export default {
       if (this.selectedBlock) {
       // Buscamos el mj-button dentro del bloque seleccionado
         const button = this.selectedBlock.querySelector('a')
+        const blockId = this.selectedBlock.getAttribute('data-block-id');
+        const rowIndex = this.selectedBlockRowIndex
+        const columnIndex = this.selectedBlockActiveColumn
 
         if (button) {
         // Cambiamos el texto del botón
           button.innerHTML = newText
+          // También actualiza el modelo de datos en rows
+
+          // Actualizar el contenido en `rows` para el elemento específico
+          const tempContainer = document.createElement('div');
+          tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
+
+          const targetElement = tempContainer.querySelector(`.${blockId}`);
+          if (targetElement) {
+            const targetButton = targetElement.querySelector('a');
+            if (targetButton) {
+              targetButton.innerHTML = newText;
+              // Actualizar el contenido de la columna con el cambio aplicado
+              this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
+            }
+          }
         } else {
           console.log('No se encontró un botón en el bloque seleccionado.')
         }
@@ -390,10 +458,27 @@ export default {
       if (this.selectedBlock) {
       // Buscamos el <a> dentro del botón seleccionado
         const buttonAnchor = this.selectedBlock.querySelector('a')
+        const blockId = this.selectedBlock.getAttribute('data-block-id');
+        const rowIndex = this.selectedBlockRowIndex
+        const columnIndex = this.selectedBlockActiveColumn
 
         if (buttonAnchor) {
-        // Cambiamos el atributo href
+          // Cambiamos el atributo href
           buttonAnchor.setAttribute('href', newHref)
+
+          // Actualizar el contenido en `rows` para el elemento específico
+          const tempContainer = document.createElement('div');
+          tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
+
+          const targetElement = tempContainer.querySelector(`.${blockId}`);
+          if (targetElement) {
+            const targetButton = targetElement.querySelector('a');
+            if (targetButton) {
+              targetButton.setAttribute('href', newHref);
+              // Actualizar el contenido de la columna con el cambio aplicado
+              this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
+            }
+          }
 
           // Prevenir el comportamiento de redirección en el editor
           buttonAnchor.addEventListener('click', (event) => {
@@ -414,13 +499,24 @@ export default {
         console.log(this.selectedBlock)
 
         const blockId = this.selectedBlock.getAttribute('data-block-id')
+        const rowIndex = this.selectedBlockRowIndex
+        const columnIndex = this.selectedBlockActiveColumn
         // Buscar el descendiente con la clase del blockId
-        const targetElement = this.selectedBlock.querySelector(`.${blockId}`)
-        if (targetElement) {
-          targetElement.style.textAlign = `-webkit-${alignment}`
+        const buttonWrapper = this.selectedBlock.querySelector(`.${blockId}`);
+        if (buttonWrapper) {
+          buttonWrapper.style.textAlign = `-webkit-${alignment}`
           console.log(`Alineación del botón actualizada a: ${alignment}`)
-        } else {
-          console.log(`No se encontró un descendiente con la clase .${blockId}`)
+        }
+
+        // Actualizar el contenido en `rows` para el elemento específico
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
+
+        const targetElement = tempContainer.querySelector(`.${blockId}`);
+        if (targetElement) {
+          targetElement.style.textAlign = `-webkit-${alignment}`;
+          // Actualizar el contenido de la columna con el cambio aplicado
+          this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
         }
       }
     },
