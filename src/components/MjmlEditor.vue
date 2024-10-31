@@ -46,7 +46,11 @@
                 paddingTop: column.padding.top + 'px',
                 paddingRight: column.padding.right + 'px',
                 paddingBottom: column.padding.bottom + 'px',
-                paddingLeft: column.padding.left + 'px'
+                paddingLeft: column.padding.left + 'px',
+                borderTop: `${column.border.width.top}px solid ${column.border.color.top}`,
+                borderRight: `${column.border.width.right}px solid ${column.border.color.right}`,
+                borderBottom: `${column.border.width.bottom}px solid ${column.border.color.bottom}`,
+                borderLeft: `${column.border.width.left}px solid ${column.border.color.left}`
               }"
               @dragover.prevent
               @drop="onDrop(rowIndex, columnIndex)"
@@ -96,8 +100,12 @@
         :columnBackgroundColor="columnBackgroundColor"
         :columnPadding="rows[selectedRowIndex]?.columns[activeColumn]?.padding"
         :columnIndex="activeColumn"
+        :columnBorderWidth="rows[selectedRowIndex]?.columns[activeColumn]?.border.width"
+        :columnBorderColor="rows[selectedRowIndex]?.columns[activeColumn]?.border.color"
         @update-background-color="updateColumnBackgroundColor"
         @update-padding="updateColumnPadding"
+        @update-border-width="updateColumnBorderWidth"
+        @update-border-color="updateColumnBorderColor"
       />
       <div class="properties-panel">
         <div class="input-container">
@@ -175,7 +183,11 @@ export default {
           columns: [{ 
             content: '', 
             backgroundColor: '#f0f0f0',
-            padding: { top: 0, right: 0, bottom: 0, left: 0 } 
+            padding: { top: 0, right: 0, bottom: 0, left: 0 },
+            border: {
+              width: { top: 0, right: 0, bottom: 0, left: 0 },
+              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+            }
           }]
         }
       ],
@@ -253,7 +265,15 @@ export default {
       this.rows = [
         {
           isSelected: false,
-          columns: [{ content: '', backgroundColor: '#f0f0f0', padding: { top: 0, right: 0, bottom: 0, left: 0 }  }]
+          columns: [{ 
+            content: '', 
+            backgroundColor: '#f0f0f0', 
+            padding: { top: 0, right: 0, bottom: 0, left: 0 },
+            border: {
+                width: { top: 0, right: 0, bottom: 0, left: 0 },
+                color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+            }
+          }]
         }
       ];
       this.selectedRowColumns = 0;
@@ -263,7 +283,15 @@ export default {
     addRow() {
       this.rows.push({
         isSelected: false,
-        columns: [{ content: '', backgroundColor: '#f0f0f0', padding: { top: 0, right: 0, bottom: 0, left: 0 }  }]
+        columns: [{ 
+          content: '', 
+          backgroundColor: '#f0f0f0', 
+          padding: { top: 0, right: 0, bottom: 0, left: 0 },
+          border: {
+              width: { top: 0, right: 0, bottom: 0, left: 0 },
+              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+          }
+        }]
       });
     },
     handleDeleteRow(rowIndex) {
@@ -586,9 +614,8 @@ export default {
       }
       return null
     },
-    triggerColorPicker() {
-      this.$refs.colorInput.click();
-    },
+
+    // Updates column properties methods
     updateColumnBackgroundColor(newColor) {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
         this.columnBackgroundColor = newColor;
@@ -600,6 +627,12 @@ export default {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
         this.rows[this.selectedRowIndex].columns[this.activeColumn].padding[side] = value;
       }
+    },
+    updateColumnBorderWidth({ side, value }) {
+      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.width[side] = value;
+    },
+    updateColumnBorderColor({ side, value }) {
+      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.color[side] = value;
     },
 
     ////// Drag and drops on rows /////
