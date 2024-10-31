@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
+
+/* Asegura que todos los elementos y pseudo-elementos usen box-sizing: border-box */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -52,7 +60,7 @@ button:focus-visible {
 #app {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  margin-top: 24px;
   text-align: center;
 }
 
@@ -119,7 +127,7 @@ button:focus-visible {
 
   .column-tabs {
     display: flex;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     border-bottom: 1px solid #ddd;
   }
   

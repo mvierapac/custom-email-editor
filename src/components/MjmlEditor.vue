@@ -41,7 +41,13 @@
               v-for="(column, columnIndex) in row.columns"
               :key="columnIndex"
               class="column"
-              :style="{ backgroundColor: column.backgroundColor || '#f0f0f0' }"
+              :style="{ 
+                backgroundColor: column.backgroundColor || '#f0f0f0',
+                paddingTop: column.padding.top + 'px',
+                paddingRight: column.padding.right + 'px',
+                paddingBottom: column.padding.bottom + 'px',
+                paddingLeft: column.padding.left + 'px'
+              }"
               @dragover.prevent
               @drop="onDrop(rowIndex, columnIndex)"
               @click="handleBlockClick($event)"
@@ -84,16 +90,15 @@
           Column {{ col }}
         </div>
       </div>
-      <div v-if="activeColumn !== null">
-          <!-- Aquí puedes mostrar propiedades específicas para la columna seleccionada -->
-          <p :style="{ 'margin-top': '-12px', 'margin-bottom':'8px' }">Propiedades de la columna {{ activeColumn + 1 }}</p>
-            <!-- Campo de selección de color para el fondo -->
-            <div class="color-picker">
-              <label>Background Color:</label>
-              <div class="color-preview" :style="{ backgroundColor: columnBackgroundColor }" @click="triggerColorPicker"></div>
-              <input type="color" v-model="columnBackgroundColor" @input="updateColumnBackgroundColor" ref="colorInput" style="visibility: hidden;">
-            </div>
-        </div>
+      <!-- Herramientas y propiedades de columna -->
+      <ColumnPropertiesPanel
+        v-if="activeColumn !== null"
+        :columnBackgroundColor="columnBackgroundColor"
+        :columnPadding="rows[selectedRowIndex]?.columns[activeColumn]?.padding"
+        :columnIndex="activeColumn"
+        @update-background-color="updateColumnBackgroundColor"
+        @update-padding="updateColumnPadding"
+      />
       <div class="properties-panel">
         <div class="input-container">
           <label for="url-input">URL</label>
@@ -132,6 +137,8 @@
 import mjml2html from 'mjml-browser'
 import InlineEditor from './InlineEditor.vue'
 
+import ColumnPropertiesPanel from './ColumnPropertiesPanel.vue';
+
 export default {
 
   mounted () {
@@ -146,7 +153,8 @@ export default {
   },
 
   components: {
-    InlineEditor
+    InlineEditor,
+    ColumnPropertiesPanel
   },
   data () {
     return {
@@ -164,7 +172,11 @@ export default {
       rows: [
         {
           isSelected: false,
-          columns: [{ content: '', backgroundColor: '#f0f0f0' }] // Definimos columnas con contenido vacío
+          columns: [{ 
+            content: '', 
+            backgroundColor: '#f0f0f0',
+            padding: { top: 0, right: 0, bottom: 0, left: 0 } 
+          }]
         }
       ],
       // CKEDITOR
@@ -241,15 +253,17 @@ export default {
       this.rows = [
         {
           isSelected: false,
-          columns: [{ content: '', backgroundColor: '#f0f0f0' }]
+          columns: [{ content: '', backgroundColor: '#f0f0f0', padding: { top: 0, right: 0, bottom: 0, left: 0 }  }]
         }
       ];
+      this.selectedRowColumns = 0;
       this.selectedRowIndex = null
+      this.activeColumn = null
     },
     addRow() {
       this.rows.push({
         isSelected: false,
-        columns: [{ content: '', backgroundColor: '#f0f0f0' }]
+        columns: [{ content: '', backgroundColor: '#f0f0f0', padding: { top: 0, right: 0, bottom: 0, left: 0 }  }]
       });
     },
     handleDeleteRow(rowIndex) {
@@ -326,22 +340,6 @@ export default {
       this.selectColumn(0)
       console.log(`Fila ${index + 1} seleccionada con ${this.selectedRowColumns} columna(s)`)
     },
-    setColumns (numColumns) {
-      if (this.selectedRowIndex === null) {
-        console.log('Por favor, selecciona una fila primero.')
-        return
-      }
-
-      // Actualiza el número de columnas de la fila seleccionada
-      if (numColumns === 1) {
-        this.rows[this.selectedRowIndex].columns = [{ content: '', backgroundColor: '#f0f0f0' }] // Una columna vacía
-      } else if (numColumns === 2) {
-        this.rows[this.selectedRowIndex].columns = [{ content: '', backgroundColor: '#f0f0f0' }, { content: '', backgroundColor: '#f0f0f0' }] // Dos columnas vacías
-      }
-      this.selectedRowColumns = numColumns
-
-      console.log(`Fila ${this.selectedRowIndex + 1}: ${numColumns} columnas seleccionadas`)
-    },
     selectColumn(index) {
       this.activeColumn = index;
       this.columnBackgroundColor = this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor
@@ -370,6 +368,8 @@ export default {
         this.rows.forEach((row, i) => {
           row.isSelected = false
         })
+
+        this.activeColumn = null
 
         // Resaltar el contenedor seleccionado
         this.highlightBlock(blockHandler)
@@ -589,9 +589,16 @@ export default {
     triggerColorPicker() {
       this.$refs.colorInput.click();
     },
-    updateColumnBackgroundColor() {
+    updateColumnBackgroundColor(newColor) {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
-        this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = this.columnBackgroundColor;
+        this.columnBackgroundColor = newColor;
+        this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = newColor;
+      }
+    },
+
+    updateColumnPadding({ side, value }) {
+      if (this.selectedRowIndex !== null && this.activeColumn !== null) {
+        this.rows[this.selectedRowIndex].columns[this.activeColumn].padding[side] = value;
       }
     },
 
@@ -662,6 +669,7 @@ export default {
     const newColumns = Array.from({ length: numColumns }, (_, i) => ({
       content: '',
       backgroundColor: '#f0f0f0',
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
       width: proportions[i] || (100 / numColumns) + '%', // Asignar proporción o dividir en partes iguales
     }));
 
@@ -682,7 +690,7 @@ export default {
 
 .wrapper {
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 4fr 2fr;
 }
 /* Estilos para el lienzo */
 .canvas {
@@ -800,9 +808,9 @@ cursor: grab;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px;
+  padding: 8px;
   padding-top: 36px;
-  margin-bottom: 16px;
+  padding-bottom: 0;
   align-items: flex-start;
 }
 
