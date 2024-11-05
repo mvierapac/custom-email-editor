@@ -3,6 +3,9 @@
     <div>
       <button @click="clearMjmlBlock">Limpiar Lienzo</button>
       <button @click="addRow">Add Row</button>
+      <button @click="exportMJMLToHTML">Export html</button>
+      <button @click="loadTemplate">Import Json</button>
+
       <div class="canvas" ref="editorContainer">
         <div
           v-for="(row, rowIndex) in rows"
@@ -11,6 +14,7 @@
           @click="selectRow(rowIndex)"
           @dragover.prevent="handleDragOverRow(rowIndex)"
           @drop="handleDropRow(rowIndex)"
+          @mouseover="handleRowHover(rowIndex)"
         >
           <!-- Indicador de arrastre solo visible en la fila seleccionada -->
           <div 
@@ -47,11 +51,12 @@
                 paddingRight: column.padding.right + 'px',
                 paddingBottom: column.padding.bottom + 'px',
                 paddingLeft: column.padding.left + 'px',
-                borderTop: `${column.border.width.top}px solid ${column.border.color.top}`,
-                borderRight: `${column.border.width.right}px solid ${column.border.color.right}`,
-                borderBottom: `${column.border.width.bottom}px solid ${column.border.color.bottom}`,
-                borderLeft: `${column.border.width.left}px solid ${column.border.color.left}`
+                borderTop: `${column.border.width?.top}px solid ${column.border.color.top}`,
+                borderRight: `${column.border.width?.right}px solid ${column.border.color.right}`,
+                borderBottom: `${column.border.width?.bottom}px solid ${column.border.color.bottom}`,
+                borderLeft: `${column.border.width?.left}px solid ${column.border.color.left}`
               }"
+              :class="{'column-outlined': !column.content, 'column-min-height': !column.content}"
               @dragover.prevent
               @drop="onDrop(rowIndex, columnIndex)"
               @click="handleBlockClick($event)"
@@ -191,6 +196,7 @@ export default {
           }]
         }
       ],
+      templateToLoad: null,
       // CKEDITOR
       editingText: false,
       currentRow: null,
@@ -703,6 +709,10 @@ export default {
       content: '',
       backgroundColor: '#f0f0f0',
       padding: { top: 0, right: 0, bottom: 0, left: 0 },
+      border: {
+              width: { top: 0, right: 0, bottom: 0, left: 0 },
+              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+      },
       width: proportions[i] || (100 / numColumns) + '%', // Asignar proporción o dividir en partes iguales
     }));
 
@@ -715,6 +725,104 @@ export default {
 
     console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`);
   },
+  /// test generate mjml
+  generateMJML() {
+        let mjmlContent = `
+            <mjml>
+                <mj-body>
+        `;
+
+        this.rows.forEach(row => {
+            mjmlContent += `<mj-section>`;
+
+            row.columns.forEach(column => {
+                mjmlContent += `
+                    <mj-column
+                        background-color="${column.backgroundColor || '#ffffff'}"
+                        padding="${column.padding.top}px ${column.padding.right}px ${column.padding.bottom}px ${column.padding.left}px"
+                        border-top="${column.border.width.top}px solid ${column.border.color.top}"
+                        border-right="${column.border.width.right}px solid ${column.border.color.right}"
+                        border-bottom="${column.border.width.bottom}px solid ${column.border.color.bottom}"
+                        border-left="${column.border.width.left}px solid ${column.border.color.left}"
+                    >
+                `;
+
+                if (column.content) {
+                    const container = document.createElement('div');
+                    container.innerHTML = column.content;
+
+                    container.querySelectorAll('.block-wrapper').forEach(block => {
+                        const blockId = block.getAttribute('data-block-id');
+
+                        if (blockId.startsWith('button')) {
+                            const buttonElement = block.querySelector('a');
+                            const buttonMjml = `
+                                <mj-button
+                                    href="${buttonElement.getAttribute('href') || '#'}"
+                                    background-color="${buttonElement.style.backgroundColor || '#1973b8'}"
+                                    color="${buttonElement.style.color || '#ffffff'}"
+                                >
+                                    ${buttonElement.innerHTML}
+                                </mj-button>
+                            `;
+                            mjmlContent += buttonMjml;
+                        } else if (blockId.startsWith('text')) {
+                            const textElement = block.querySelector('p, div');
+                            const textMjml = `
+                                <mj-text>
+                                    ${textElement.innerHTML}
+                                </mj-text>
+                            `;
+                            mjmlContent += textMjml;
+                        }
+                    });
+                }
+
+                mjmlContent += `</mj-column>`;
+            });
+
+            mjmlContent += `</mj-section>`;
+        });
+
+        mjmlContent += `
+                </mj-body>
+            </mjml>
+        `;
+
+        return mjmlContent;
+    },
+
+    exportMJMLToHTML() {
+        const mjmlContent = this.generateMJML();
+        const { html } = mjml2html(mjmlContent);
+        this.saveTemplate()
+        console.log(html); // Aquí puedes manejar el HTML como desees
+    },
+    saveTemplate() {
+  const templateData = JSON.stringify(this.rows);
+      this.templateToLoad = templateData
+},
+loadTemplate() {
+  this.rows = JSON.parse(this.templateToLoad);
+},
+// Hover de las filas
+checkRowContent(rowIndex) {
+    const rowDOM = this.$refs.editorContainer.children[rowIndex];
+    const row = this.rows[rowIndex];
+    const hasContent = row.columns.some(
+      column => column.content.trim() !== ''
+    );
+    if (hasContent) {
+      rowDOM.classList.remove('hoverable');
+      console.log('remove')
+    } else {
+      rowDOM.classList.add('hoverable');
+    }
+  },
+  
+  handleRowHover(rowIndex) {
+    this.checkRowContent(rowIndex);
+  }
   }
 }
 </script>
@@ -736,16 +844,32 @@ export default {
 
 .row {
   position: relative; /* Para posicionar el indicador de arrastre */
-  border: 1px dashed #1e90ff; /* Borde punteado */
-  background-color: #e6f2fb;  /* Azul claro */
-  padding: 20px;
+  padding: 0 20px;
   text-align: center;
   cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* .row:hover:not(.row-selected) {
+  outline: 1px dashed #1e90ff; 
+  background-color: #e6f2fb;  
+} */
+
+.row.hoverable:hover:not(.row-selected) {
+  outline: 1px dashed #1e90ff; /* Borde punteado */
+  background-color: #e6f2fb;  /* Azul claro */
 }
 
 .row-selected {
-  border: 1px solid #1e3a8a; /* Borde sólido azul oscuro */
+  outline: 1px solid #1e90ff; /* Borde sólido azul oscuro */
   background-color: #dbeafe;  /* Azul más oscuro */
+  z-index: 1;
+}
+
+/* Deshabilitar el hover de las filas dentro de columnas con contenido */
+.column.with-content:hover ~ .row.hoverable {
+  outline: none;
+  background-color: transparent;
 }
 
 /* Indicador de arrastre */
@@ -815,12 +939,13 @@ border: 1px solid #ccc;
 display: flex;
 justify-content: center;
 align-items: center;
-height: 100px;
+/* height: 100px; */
 }
 
 .column > div {
   width: 100%;
   max-width: 600px;
+  z-index: 1;
 }
 
 
@@ -883,6 +1008,7 @@ background-color: #a9a9a9;
 
 :deep(.selected-block) {
   outline: 2px solid #007bff;
+  outline-offset: -1px;
   box-sizing: border-box;
 }
 
@@ -946,6 +1072,16 @@ background-color: #a9a9a9;
   margin: 0 auto; /* Centra el contenedor en la fila */
   display: flex;
   gap: 0; /* Sin espacio entre columnas */
+}
+
+.column-outlined {
+  outline: 1px blue dashed;
+  outline-offset: -1px;
+  z-index: 1;
+}
+
+.column-min-height {
+  min-height: 100px;
 }
 
 /* Configuración para una sola columna */
