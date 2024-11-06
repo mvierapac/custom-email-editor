@@ -14,7 +14,7 @@
           @click="selectRow(rowIndex)"
           @dragover.prevent="handleDragOverRow(rowIndex)"
           @drop="handleDropRow(rowIndex)"
-          @mouseover="handleRowHover(rowIndex)"
+
         >
           <!-- Indicador de arrastre solo visible en la fila seleccionada -->
           <div 
@@ -61,7 +61,7 @@
               @drop="onDrop(rowIndex, columnIndex)"
               @click="handleBlockClick($event)"
             >
-              <div v-if="column.content" v-html="column.content"></div>
+              <BlockRenderer v-if="column.content.length"  @edit-block="handleEditBlock(rowIndex, columnIndex, blockIndex)" :content="column.content" />
               <p v-else>Columna {{ columnIndex + 1 }}</p>
             </div>
           </div>
@@ -151,6 +151,8 @@ import mjml2html from 'mjml-browser'
 import InlineEditor from './InlineEditor.vue'
 
 import ColumnPropertiesPanel from './ColumnPropertiesPanel.vue';
+import BlockRenderer from './BlockRenderer.vue'
+import { buttonBlock } from './blocks';
 
 export default {
 
@@ -167,6 +169,7 @@ export default {
 
   components: {
     InlineEditor,
+    BlockRenderer,
     ColumnPropertiesPanel
   },
   data () {
@@ -186,7 +189,7 @@ export default {
         {
           isSelected: false,
           columns: [{ 
-            content: '', 
+            content: [], 
             backgroundColor: '#f0f0f0',
             padding: { top: 0, right: 0, bottom: 0, left: 0 },
             border: {
@@ -220,52 +223,49 @@ export default {
       console.log('Arrastrando: ' + this.dragItemType)
     },
     onDrop (rowIndex, columnIndex) {
-      if (!this.dragItemType) return
+  if (!this.dragItemType) return;
 
-      let mjmlContent = ''
-      const blockId = `${this.dragItemType}-${Date.now()}`
+  const blockId = `${this.dragItemType}-${Date.now()}`;
 
-      // Generamos el MJML según el tipo de bloque
-      if (this.dragItemType === 'button') {
-        mjmlContent = `
-          <mj-button css-class="${blockId}" text-decoration="none" href=" " background-color="#1973b8" color="white" editable="true" border-radius="1px" inner-padding="12px 32px">
-            Botón
-          </mj-button>
-        `
-      } else if (this.dragItemType === 'text') {
-        mjmlContent = `
-          <mj-text css-class="${blockId}">
-            ¡Texto MJML insertado!
-          </mj-text>
-        `
+  // Definir contenido JSON basado en el tipo de bloque
+  let content;
+  if (this.dragItemType === 'button') {
+    content = {
+      type: 'button',
+      dataBlockId: blockId,
+      wrapper: {
+        padding: { top: 0, right: 0, bottom: 0, left: 0 }, // Propiedades de estilo específicas
+        // puedes añadir otros atributos como el background o border aquí
+      },
+      attributes: {
+        text: 'Botón',
+        href: '',
+        backgroundColor: '#1973b8',
+        textColor: 'white',
+        padding: '12px 32px',
+        blockId
       }
+    };
+  } else if (this.dragItemType === 'text') {
+    content = {
+      type: 'text',
+      attributes: {
+        text: '¡Texto MJML insertado!',
+        fontSize: '14px',
+        color: '#000000',
+        blockId
+      }
+    };
+  }
 
-      // Convertir MJML a HTML
-      const { html } = mjml2html(`
-        <mjml>
-          <mj-body>
-            <mj-section>
-              <mj-column>
-                ${mjmlContent}
-              </mj-column>
-            </mj-section>
-          </mj-body>
-        </mjml>
-      `)
+  // Actualizamos el contenido de la columna con el bloque JSON
+  if (content) {
+    this.rows[rowIndex].columns[columnIndex].content.push(content);
+  }
 
-      // Envolver el HTML en un contenedor que sea clickeable
-      const wrappedHtml = `
-        <div class="block-wrapper" data-block-id="${blockId}" @click="handleBlockClick">
-          ${html}
-        </div>
-      `
-
-      // Actualizamos el contenido de la columna con el contenedor envuelto
-      this.rows[rowIndex].columns[columnIndex].content = wrappedHtml
-
-      // Reseteamos el tipo de bloque arrastrado
-      this.dragItemType = null
-    },
+  // Reseteamos el tipo de bloque arrastrado
+  this.dragItemType = null;
+},
     clearMjmlBlock () {
       // Limpiamos todas las filas
       this.rows = [
@@ -382,7 +382,7 @@ export default {
     handleBlockClick (event) {
 
       const blockHandler = event.target.closest('.block-wrapper') // Selecciona el contenedor más cercano
-
+      console.log(blockHandler)
       if (blockHandler) {
         const blockId = blockHandler.getAttribute('data-block-id')
         // Obtener los índices de fila y columna sin cambiar la selección visual
@@ -842,6 +842,10 @@ checkRowContent(rowIndex) {
   min-width: 70%;
 }
 
+.canvas > a {
+  color: white;
+}
+
 .row {
   position: relative; /* Para posicionar el indicador de arrastre */
   padding: 0 20px;
@@ -939,7 +943,7 @@ border: 1px solid #ccc;
 display: flex;
 justify-content: center;
 align-items: center;
-/* height: 100px; */
+height: 100px;
 }
 
 .column > div {
