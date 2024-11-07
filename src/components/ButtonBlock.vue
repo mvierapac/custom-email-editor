@@ -1,11 +1,14 @@
 <template>
-    <a :href="attributes.href"  class="button-link" :style="computedStyles">{{ attributes.text }}</a>
+    <div :data-block-id="dataBlockId">
+      <a :href="attributes.href"  class="button-link" :style="computedStyles">{{ attributes.text }}</a>
+    </div>
   </template>
   
   <script>
   export default {
     props: {
-      attributes: Object
+      attributes: Object,
+      dataBlockId: String
     },
     computed: {
       computedStyles() {

@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <div>
-      <button @click="clearMjmlBlock">Limpiar Lienzo</button>
+      <button @click="clearCanvas">Limpiar Lienzo</button>
       <button @click="addRow">Add Row</button>
       <button @click="exportMJMLToHTML">Export html</button>
       <button @click="loadTemplate">Import Json</button>
@@ -17,9 +17,9 @@
 
         >
           <!-- Indicador de arrastre solo visible en la fila seleccionada -->
-          <div 
-            v-if="row.isSelected" 
-            class="drag-handle" 
+          <div
+            v-if="row.isSelected"
+            class="drag-handle"
             @mousedown.stop
             @dragstart="handleDragStartRow($event, rowIndex)"
             draggable="true"
@@ -28,7 +28,7 @@
           </div>
 
           <!-- Panel de acciones de la fila -->
-          <div 
+          <div
             v-if="row.isSelected"
             class="row-action-panel"
           >
@@ -45,7 +45,7 @@
               v-for="(column, columnIndex) in row.columns"
               :key="columnIndex"
               class="column"
-              :style="{ 
+              :style="{
                 backgroundColor: column.backgroundColor || '#f0f0f0',
                 paddingTop: column.padding.top + 'px',
                 paddingRight: column.padding.right + 'px',
@@ -56,13 +56,19 @@
                 borderBottom: `${column.border.width?.bottom}px solid ${column.border.color.bottom}`,
                 borderLeft: `${column.border.width?.left}px solid ${column.border.color.left}`
               }"
-              :class="{'column-outlined': !column.content, 'column-min-height': !column.content}"
+              :class="{'column-outlined': !column.content.length, 'column-min-height': !column.content.length}"
               @dragover.prevent
               @drop="onDrop(rowIndex, columnIndex)"
-              @click="handleBlockClick($event)"
             >
-              <BlockRenderer v-if="column.content.length"  @edit-block="handleEditBlock(rowIndex, columnIndex, blockIndex)" :content="column.content" />
-              <p v-else>Columna {{ columnIndex + 1 }}</p>
+              <div  v-if="column.content.length">
+                <BlockRenderer
+                  v-for="block in column.content"
+                  :key="block.blockId"
+                  :block="block"
+                  @block-selected="handleBlockSelection"
+                />
+              </div>
+            <p v-else>Columna {{ columnIndex + 1 }}</p>
             </div>
           </div>
         </div>
@@ -90,8 +96,8 @@
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="image">MJ-image</div>
       </div>
       <div class="column-tabs" v-if="selectedRowColumns > 0">
-        <div 
-          v-for="col in selectedRowColumns" 
+        <div
+          v-for="col in selectedRowColumns"
           :key="col"
           :class="['tab', { 'active-tab': activeColumn === col - 1 }]"
           @click="selectColumn(col - 1)"
@@ -115,20 +121,20 @@
       <div class="properties-panel">
         <div class="input-container">
           <label for="url-input">URL</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             id="url-input"
             v-model="buttonLink"
-            @blur="updateButtonHref(buttonLink)" 
+            @blur="updateButtonHref(buttonLink)"
             placeholder="https://example.com">
         </div>
         <div class="input-container">
           <label for="button-text">Texto</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             id="button-text"
             v-model="buttonText"
-            @blur="updateButtonText(buttonText)" 
+            @blur="updateButtonText(buttonText)"
             placeholder="Texto">
         </div>
         <!-- <input type="text" v-model="buttonText" placeholder="Nuevo texto del botón" />
@@ -150,9 +156,9 @@
 import mjml2html from 'mjml-browser'
 import InlineEditor from './InlineEditor.vue'
 
-import ColumnPropertiesPanel from './ColumnPropertiesPanel.vue';
+import ColumnPropertiesPanel from './ColumnPropertiesPanel.vue'
 import BlockRenderer from './BlockRenderer.vue'
-import { buttonBlock } from './blocks';
+import { buttonBlock } from './blocks'
 
 export default {
 
@@ -174,6 +180,8 @@ export default {
   },
   data () {
     return {
+      selectedColumnIndex: null,
+      selectedBlockId: null,
       selectedRowIndex: null, // Almacena el índice de la fila seleccionada
       selectedRowColumns: 0,
       activeColumn: null, // Columna actualmente seleccionada en el panel
@@ -188,8 +196,8 @@ export default {
       rows: [
         {
           isSelected: false,
-          columns: [{ 
-            content: [], 
+          columns: [{
+            content: [],
             backgroundColor: '#f0f0f0',
             padding: { top: 0, right: 0, bottom: 0, left: 0 },
             border: {
@@ -204,7 +212,7 @@ export default {
       editingText: false,
       currentRow: null,
       currentColumn: null,
-      draggedRowIndex: null,
+      draggedRowIndex: null
     }
   },
   methods: {
@@ -223,134 +231,131 @@ export default {
       console.log('Arrastrando: ' + this.dragItemType)
     },
     onDrop (rowIndex, columnIndex) {
-  if (!this.dragItemType) return;
+      if (!this.dragItemType) return
 
-  const blockId = `${this.dragItemType}-${Date.now()}`;
+      const blockId = `${this.dragItemType}-${Date.now()}`
 
-  // Definir contenido JSON basado en el tipo de bloque
-  let content;
-  if (this.dragItemType === 'button') {
-    content = {
-      type: 'button',
-      dataBlockId: blockId,
-      wrapper: {
-        padding: { top: 0, right: 0, bottom: 0, left: 0 }, // Propiedades de estilo específicas
-        // puedes añadir otros atributos como el background o border aquí
-      },
-      attributes: {
-        text: 'Botón',
-        href: '',
-        backgroundColor: '#1973b8',
-        textColor: 'white',
-        padding: '12px 32px',
-        blockId
+      // Definir contenido JSON basado en el tipo de bloque
+      let newBlock
+      if (this.dragItemType === 'button') {
+        newBlock = {
+          blockId: blockId,
+          type: 'button',
+          properties: {
+            text: 'Botón',
+            href: '',
+            backgroundColor: '#1973b8',
+            color: '#FFFFFF',
+            padding: '12px 32px',
+            borderRadius: '1px',
+            aligment: 'center'
+          }
+        }
+      } else if (this.dragItemType === 'text') {
+        newBlock = {
+          blockId: blockId,
+          type: 'text',
+          properties: {
+            text: '<p style="text-align:center;">¡Texto MJML insertado!</p>',
+            fontSize: '14px',
+            color: '#000000'
+          }
+        }
       }
-    };
-  } else if (this.dragItemType === 'text') {
-    content = {
-      type: 'text',
-      attributes: {
-        text: '¡Texto MJML insertado!',
-        fontSize: '14px',
-        color: '#000000',
-        blockId
+
+      // Actualizamos el contenido de la columna con el bloque JSON
+      if (newBlock) {
+        this.rows[rowIndex].columns[columnIndex].content.push(newBlock)
       }
-    };
-  }
 
-  // Actualizamos el contenido de la columna con el bloque JSON
-  if (content) {
-    this.rows[rowIndex].columns[columnIndex].content.push(content);
-  }
-
-  // Reseteamos el tipo de bloque arrastrado
-  this.dragItemType = null;
-},
-    clearMjmlBlock () {
+      // Reseteamos el tipo de bloque arrastrado
+      this.dragItemType = null
+    },
+    clearCanvas () {
       // Limpiamos todas las filas
       this.rows = [
         {
           isSelected: false,
-          columns: [{ 
-            content: '', 
-            backgroundColor: '#f0f0f0', 
+          columns: [{
+            content: [],
+            backgroundColor: '#f0f0f0',
             padding: { top: 0, right: 0, bottom: 0, left: 0 },
             border: {
-                width: { top: 0, right: 0, bottom: 0, left: 0 },
-                color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+              width: { top: 0, right: 0, bottom: 0, left: 0 },
+              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
             }
           }]
         }
-      ];
-      this.selectedRowColumns = 0;
+      ]
+      this.selectedRowColumns = 0
       this.selectedRowIndex = null
       this.activeColumn = null
     },
-    addRow() {
+    addRow () {
       this.rows.push({
         isSelected: false,
-        columns: [{ 
-          content: '', 
-          backgroundColor: '#f0f0f0', 
+        columns: [{
+          content: [],
+          backgroundColor: '#f0f0f0',
           padding: { top: 0, right: 0, bottom: 0, left: 0 },
           border: {
-              width: { top: 0, right: 0, bottom: 0, left: 0 },
-              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+            width: { top: 0, right: 0, bottom: 0, left: 0 },
+            color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
           }
         }]
-      });
+      })
     },
-    handleDeleteRow(rowIndex) {
-      console.log(`Eliminar fila ${rowIndex}`);
+    handleDeleteRow (rowIndex) {
+      console.log(`Eliminar fila ${rowIndex}`)
       if (this.rows.length == 1) {
         return
       }
-      this.rows.splice(rowIndex, 1);
-      
+      this.rows.splice(rowIndex, 1)
+
       // Reiniciar la selección de fila después de eliminarla
-      this.selectedRowIndex = null;
-      this.selectedRowColumns = 0;
-      this.activeColumn = null;
+      this.selectedRowIndex = null
+      this.selectedRowColumns = 0
+      this.activeColumn = null
     },
-    handleCopyRow(rowIndex) {
-      console.log(`Copiar fila ${rowIndex}`);
-      const originalRow = this.rows[rowIndex];
-  
+    handleCopyRow (rowIndex) {
+      console.log(`Copiar fila ${rowIndex}`)
+      const originalRow = this.rows[rowIndex]
+
       // Clonar la fila original para modificarla sin afectar al original
-      const clonedRow = JSON.parse(JSON.stringify(originalRow));
+      const clonedRow = JSON.parse(JSON.stringify(originalRow))
 
       // Recorrer cada columna y actualizar los `data-block-id` y clases dentro del contenido
       clonedRow.columns = clonedRow.columns.map(column => {
-        const tempContainer = document.createElement('div');
-        tempContainer.innerHTML = column.content;
+        const tempContainer = document.createElement('div')
+        tempContainer.innerHTML = column.content
 
         // Selecciona todos los elementos que tengan `data-block-id` para actualizar sus identificadores
-        const blocks = tempContainer.querySelectorAll('[data-block-id]');
+        const blocks = tempContainer.querySelectorAll('[data-block-id]')
         blocks.forEach(block => {
-          const oldBlockId = block.getAttribute('data-block-id');
-          const prefix = oldBlockId.split('-')[0]; // Obtener el prefijo (button, text, image, etc.)
-          const newBlockId = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`; // Generar un nuevo ID único con el prefijo adecuado
+          const oldBlockId = block.getAttribute('data-block-id')
+          const prefix = oldBlockId.split('-')[0] // Obtener el prefijo (button, text, image, etc.)
+          const newBlockId = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}` // Generar un nuevo ID único con el prefijo adecuado
 
           // Actualizar el `data-block-id` en el contenedor
-          block.setAttribute('data-block-id', newBlockId);
+          block.setAttribute('data-block-id', newBlockId)
 
           // Solo actualizar las clases en los hijos que tienen `oldBlockId` como clase
-          const childElements = block.querySelectorAll(`.${oldBlockId}`);
+          const childElements = block.querySelectorAll(`.${oldBlockId}`)
           childElements.forEach(child => {
-            child.classList.remove(oldBlockId);
-            child.classList.add(newBlockId);
-          });
-        });
+            child.classList.remove(oldBlockId)
+            child.classList.add(newBlockId)
+          })
+        })
 
         // Actualizar el contenido de la columna con los nuevos IDs
-        column.content = tempContainer.innerHTML;
-        return column;
-      });
+        column.content = tempContainer.innerHTML
+        return column
+      })
 
       // Insertar la fila clonada justo después de la fila original
-      this.rows.splice(rowIndex + 1, 0, clonedRow);
+      this.rows.splice(rowIndex + 1, 0, clonedRow)
 
-      console.log(`Fila ${rowIndex} copiada en la posición ${rowIndex + 1}.`);
+      console.log(`Fila ${rowIndex} copiada en la posición ${rowIndex + 1}.`)
     },
     selectRow (index) {
       const clickedElement = event.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
@@ -370,194 +375,127 @@ export default {
 
       // Actualizamos el índice de la fila seleccionada
       this.selectedRowIndex = index
-      this.selectedRowColumns = this.rows[index].columns.length;
+      this.selectedRowColumns = this.rows[index].columns.length
       this.selectColumn(0)
       console.log(`Fila ${index + 1} seleccionada con ${this.selectedRowColumns} columna(s)`)
     },
-    selectColumn(index) {
-      this.activeColumn = index;
+    selectColumn (index) {
+      this.activeColumn = index
       this.columnBackgroundColor = this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor
-      console.log(`Columna ${index + 1} seleccionada`);
+      console.log(`Columna ${index + 1} seleccionada`)
     },
-    handleBlockClick (event) {
+    handleBlockSelection (blockId) {
+      // Iterar sobre filas y columnas para encontrar el bloque con el blockId
+      for (let rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
+        const row = this.rows[rowIndex]
+        for (let columnIndex = 0; columnIndex < row.columns.length; columnIndex++) {
+          const column = row.columns[columnIndex]
+          const block = column.content.find(block => block.blockId === blockId)
 
-      const blockHandler = event.target.closest('.block-wrapper') // Selecciona el contenedor más cercano
-      console.log(blockHandler)
-      if (blockHandler) {
-        const blockId = blockHandler.getAttribute('data-block-id')
-        // Obtener los índices de fila y columna sin cambiar la selección visual
-        const { rowIndex, columnIndex } = this.getRowAndColumnOfBlock(blockId);
-        if (rowIndex !== null && columnIndex !== null) {
-          this.selectedBlockRowIndex = rowIndex;
-          this.selectedBlockActiveColumn = columnIndex;
-        }
-        // Comprobar si es texto o botón ... añadir más comprobaciones más adelante
-        const isText = blockId.includes('text')
-        const isButton = blockId.includes('button');
-        console.log('Contenedor seleccionado, ID:', blockId)
-        console.log('isText', isText)
+          if (block) {
+            // Bloque encontrado, guardar referencias
+            const isText = blockId.includes('text')
+            const isButton = blockId.includes('button')
+            this.selectedRowIndex = rowIndex
+            this.selectedColumnIndex = columnIndex
+            this.selectedBlockId = blockId
+            this.selectedBlock = block // Guarda el bloque para futuras modificaciones
+            // Deseleccionamos todas las filas primero
+            this.rows.forEach((row, i) => {
+              row.isSelected = false
+            })
 
+            this.activeColumn = null
 
-        // Deseleccionamos todas las filas primero
-        this.rows.forEach((row, i) => {
-          row.isSelected = false
-        })
+            if (isButton) {
+              this.buttonText = this.selectedBlock.properties.text // Asigna el texto del botón
+              this.buttonLink = this.selectedBlock.properties.href // Asigna el href del botón
+            }
 
-        this.activeColumn = null
+            if (isText) {
+              // Inicia CKEditor para bloques de texto
+              this.editText(rowIndex, columnIndex)
+              const textContainer = document.querySelector(`.${blockId}`)
+              this.selectedTextContent = textContainer.innerHTML
+              this.editingText = true
+            }
 
-        // Resaltar el contenedor seleccionado
-        this.highlightBlock(blockHandler)
-        this.selectedBlock = blockHandler
-
-        // CKEDITOR
-        if (isText) {
-          this.currentRow = this.getRowIndexFromBlockId(blockId)
-          this.currentColumn = this.getColumnIndexFromBlockId(blockId)
-          const textContainer = blockHandler.querySelector(`.${blockId}`);
-          const textElement = textContainer.querySelector('div, p');
-          this.selectedTextContent = textElement.innerHTML;
-          this.editingText = true
-        } else {
-          this.editingText = false
-        }
-
-        if (isButton) {
-          const button = blockHandler.querySelector('a');
-          if (button) {
-            this.buttonText = button.innerText; // Asigna el texto del botón
-            this.buttonLink = button.getAttribute('href').trim(); // Asigna el href del botón
+            // Resaltar el contenedor seleccionado
+            this.highlightBlock(this.selectedBlock)
+            console.log(`Bloque con ID ${blockId} seleccionado en fila ${rowIndex}, columna ${columnIndex}`)
+            return
           }
         }
-
-        // Prevenir redirección si el clic es en un enlace
-        const targetAnchor = blockHandler.querySelector('a')
-        if (targetAnchor) {
-          event.preventDefault() // Evita la redirección
-        }
-        this.selectedRowIndex = null
-        this.selectedRowColumns = null
       }
     },
+
+    /** Review
+     *
+     * Actualmente no se usa, revisar
+     */
+
     // Need to know the row and column of the block selected without selecting the row
-    getRowAndColumnOfBlock(blockId) {
+    getRowAndColumnOfBlock (blockId) {
       for (let rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
-        const columnIndex = this.rows[rowIndex].columns.findIndex(column => column.content.includes(blockId));
+        const columnIndex = this.rows[rowIndex].columns.findIndex(column => column.content.includes(blockId))
         if (columnIndex !== -1) {
-          return { rowIndex, columnIndex };
+          return { rowIndex, columnIndex }
         }
       }
-      return { rowIndex: null, columnIndex: null };
+      return { rowIndex: null, columnIndex: null }
     },
 
     removeHighlightBlock () {
       // Remover el resaltado de otros bloques
       document.querySelectorAll('.block-wrapper').forEach(block => {
         block.classList.remove('selected-block')
-      })      
+      })
     },
-    highlightBlock (blockHandler) {
+    highlightBlock () {
       // Remover el resaltado de otros bloques
       this.removeHighlightBlock()
-
+      const blockElement = document.querySelector(`[data-block-id="${this.selectedBlock.blockId}"]`)
       // Añadir el resaltado al bloque seleccionado
-      blockHandler.classList.add('selected-block')
+      blockElement.classList.add('selected-block')
     },
 
     updateButtonText (newText) {
       if (this.selectedBlock) {
-      // Buscamos el mj-button dentro del bloque seleccionado
-        const button = this.selectedBlock.querySelector('a')
-        const blockId = this.selectedBlock.getAttribute('data-block-id');
-        const rowIndex = this.selectedBlockRowIndex
-        const columnIndex = this.selectedBlockActiveColumn
-
-        if (button) {
-        // Cambiamos el texto del botón
-          button.innerHTML = newText
-          // También actualiza el modelo de datos en rows
-
-          // Actualizar el contenido en `rows` para el elemento específico
-          const tempContainer = document.createElement('div');
-          tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
-
-          const targetElement = tempContainer.querySelector(`.${blockId}`);
-          if (targetElement) {
-            const targetButton = targetElement.querySelector('a');
-            if (targetButton) {
-              targetButton.innerHTML = newText;
-              // Actualizar el contenido de la columna con el cambio aplicado
-              this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
-            }
-          }
-        } else {
-          console.log('No se encontró un botón en el bloque seleccionado.')
-        }
-      }
-    },
-    updateButtonHref (newHref) {
-      if (this.selectedBlock) {
-      // Buscamos el <a> dentro del botón seleccionado
-        const buttonAnchor = this.selectedBlock.querySelector('a')
-        const blockId = this.selectedBlock.getAttribute('data-block-id');
-        const rowIndex = this.selectedBlockRowIndex
-        const columnIndex = this.selectedBlockActiveColumn
-
-        if (buttonAnchor) {
-          // Cambiamos el atributo href
-          buttonAnchor.setAttribute('href', newHref)
-
-          // Actualizar el contenido en `rows` para el elemento específico
-          const tempContainer = document.createElement('div');
-          tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
-
-          const targetElement = tempContainer.querySelector(`.${blockId}`);
-          if (targetElement) {
-            const targetButton = targetElement.querySelector('a');
-            if (targetButton) {
-              targetButton.setAttribute('href', newHref);
-              // Actualizar el contenido de la columna con el cambio aplicado
-              this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
-            }
-          }
-
-          // Prevenir el comportamiento de redirección en el editor
-          buttonAnchor.addEventListener('click', (event) => {
-            event.preventDefault()
-          })
-
-          console.log('Href del botón actualizado a:', newHref)
-        } else {
-          console.log('No se encontró un <a> en el bloque seleccionado.')
-        }
+        this.selectedBlock.properties.text = newText
+        console.log(`Text del bloque con ID ${this.selectedBlockId} actualizado a: ${newText}`)
       } else {
         console.log('No hay bloque seleccionado.')
       }
     },
+    updateButtonHref (newHref) {
+      if (this.selectedBlock && this.selectedBlock.type === 'button') {
+        this.selectedBlock.properties.href = newHref
+        console.log(`Href del bloque con ID ${this.selectedBlockId} actualizado a: ${newHref}`)
+      } else {
+        console.log('No hay bloque seleccionado o el bloque seleccionado no es un botón.')
+      }
+    },
     updateButtonAlignment (alignment) {
       if (this.selectedBlock) {
-      // En este caso actuamos sobre el bloque en sí
-        console.log(this.selectedBlock)
+        const blockId = this.selectedBlock.blockId
+        this.selectedBlock.properties.alignment = alignment
+        const blockElement = document.querySelector(`[data-block-id="${this.selectedBlock.blockId}"]`)
 
-        const blockId = this.selectedBlock.getAttribute('data-block-id')
-        const rowIndex = this.selectedBlockRowIndex
-        const columnIndex = this.selectedBlockActiveColumn
-        // Buscar el descendiente con la clase del blockId
-        const buttonWrapper = this.selectedBlock.querySelector(`.${blockId}`);
-        if (buttonWrapper) {
-          buttonWrapper.style.textAlign = `-webkit-${alignment}`
+        if (blockElement) {
+          blockElement.style.textAlign = `${alignment}`
           console.log(`Alineación del botón actualizada a: ${alignment}`)
         }
 
-        // Actualizar el contenido en `rows` para el elemento específico
-        const tempContainer = document.createElement('div');
-        tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
+        // // Actualizar el contenido en `rows` para el elemento específico
+        // const tempContainer = document.createElement('div');
+        // tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
 
-        const targetElement = tempContainer.querySelector(`.${blockId}`);
-        if (targetElement) {
-          targetElement.style.textAlign = `-webkit-${alignment}`;
-          // Actualizar el contenido de la columna con el cambio aplicado
-          this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
-        }
+        // const targetElement = tempContainer.querySelector(`.${blockId}`);
+        // if (targetElement) {
+        //   targetElement.style.textAlign = `-webkit-${alignment}`;
+        //   // Actualizar el contenido de la columna con el cambio aplicado
+        //   this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
+        // }
       }
     },
     editText (rowIndex, columnIndex) {
@@ -565,45 +503,22 @@ export default {
       this.currentColumn = columnIndex
       this.editingText = true
     },
-    updateTextBlockContent(newContent) {
-    console.log('newcontent', newContent);
+    updateTextBlockContent (newContent) {
+      console.log('newContent:', newContent)
 
-    // Ajusta el contenido de <p> para que todos tengan margin: 0
-      const adjustedContent = newContent.replace(/<p(\s+[^>]*)?>/g, (match, attrs) => {
-      if (attrs && attrs.includes('style=')) {
-        // Si ya existe un estilo, añade margin: 0 dentro del style actual
-        return match.replace(/style="([^"]*)"/, 'style="$1 margin: 0;"');
+      // Encuentra el bloque seleccionado en el JSON de datos
+      const selectedRow = this.rows[this.currentRow]
+      const selectedColumn = selectedRow.columns[this.currentColumn]
+      const block = selectedColumn.content.find(block => block.blockId === this.selectedBlock.blockId)
+
+      if (block && block.type === 'text') {
+        // Actualiza el contenido HTML completo en `text`
+        block.properties.text = newContent
+        console.log(`Contenido HTML del bloque ${block.blockId} actualizado: ${newContent}`)
       } else {
-        // Si no tiene estilo, añade uno con margin: 0
-        return `<p style="margin: 0;"${attrs || ''}>`;
+        console.log('No se encontró el bloque de texto para actualizar.')
       }
-    });
-
-    console.log(adjustedContent)
-    // Accede al contenido actual de la fila y columna seleccionadas
-    const currentContent = this.rows[this.currentRow].columns[this.currentColumn].content;
-
-    // Crear un contenedor temporal para manipular el contenido HTML
-    const tempContainer = document.createElement('div');
-    tempContainer.innerHTML = currentContent;
-
-    // Selecciona el div objetivo dentro del contenido actual usando la clase dinámica
-    const blockId = this.selectedBlock.getAttribute('data-block-id');
-    const targetDiv = tempContainer.querySelector(`.${blockId} div`);
-
-    if (targetDiv) {
-      // Actualiza solo el contenido de texto en el div sin modificar la estructura
-      targetDiv.innerHTML = adjustedContent;
-
-      // Guarda el contenido actualizado en la estructura de datos del editor
-      this.rows[this.currentRow].columns[this.currentColumn].content = tempContainer.innerHTML;
-    } else {
-      console.log("No se encontró el div objetivo para actualizar el contenido.");
-    }
-
-    // Detiene la edición después de actualizar el texto
-    // this.editingText = false;
-  },
+    },
     // Métodos adicionales para encontrar la fila y columna de un bloque dado su blockId
     getRowIndexFromBlockId (blockId) {
       for (let i = 0; i < this.rows.length; i++) {
@@ -613,6 +528,11 @@ export default {
       }
       return null
     },
+
+    /* Review
+      Actualmente no se usa, revisar
+
+    */
     getColumnIndexFromBlockId (blockId) {
       const rowIndex = this.getRowIndexFromBlockId(blockId)
       if (rowIndex !== null) {
@@ -622,121 +542,121 @@ export default {
     },
 
     // Updates column properties methods
-    updateColumnBackgroundColor(newColor) {
+    updateColumnBackgroundColor (newColor) {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
-        this.columnBackgroundColor = newColor;
-        this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = newColor;
+        this.columnBackgroundColor = newColor
+        this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = newColor
       }
     },
 
-    updateColumnPadding({ side, value }) {
+    updateColumnPadding ({ side, value }) {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
-        this.rows[this.selectedRowIndex].columns[this.activeColumn].padding[side] = value;
+        this.rows[this.selectedRowIndex].columns[this.activeColumn].padding[side] = value
       }
     },
-    updateColumnBorderWidth({ side, value }) {
-      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.width[side] = value;
+    updateColumnBorderWidth ({ side, value }) {
+      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.width[side] = value
     },
-    updateColumnBorderColor({ side, value }) {
-      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.color[side] = value;
+    updateColumnBorderColor ({ side, value }) {
+      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.color[side] = value
     },
 
-    ////// Drag and drops on rows /////
-    handleDragStartRow(dragEvent, index) {
-      this.draggedRowIndex = index;
+    /// /// Drag and drops on rows /////
+    handleDragStartRow (dragEvent, index) {
+      this.draggedRowIndex = index
 
       // Clonar el elemento de la fila y usarlo como imagen de arrastre
-      const rowElement = dragEvent.target.closest('.row');
-      const rowClone = rowElement.cloneNode(true);
-      rowClone.style.position = 'absolute';
-      rowClone.style.top = '-9999px';
-      rowClone.style.left = '-9999px';
-      document.body.appendChild(rowClone);
+      const rowElement = dragEvent.target.closest('.row')
+      const rowClone = rowElement.cloneNode(true)
+      rowClone.style.position = 'absolute'
+      rowClone.style.top = '-9999px'
+      rowClone.style.left = '-9999px'
+      document.body.appendChild(rowClone)
 
       // Ajustar la posición del punto de arrastre dentro del clon
-      const offsetX = 250; // Ajusta este valor para mover el clon hacia la izquierda
-      const offsetY = rowClone.offsetHeight / 2; // Centrado verticalmente
+      const offsetX = 250 // Ajusta este valor para mover el clon hacia la izquierda
+      const offsetY = rowClone.offsetHeight / 2 // Centrado verticalmente
 
       // Usar el clon como imagen de arrastre con desplazamiento
-      dragEvent.dataTransfer.setDragImage(rowClone, offsetX, offsetY);
+      dragEvent.dataTransfer.setDragImage(rowClone, offsetX, offsetY)
 
       // Remover el clon después de un pequeño retraso para asegurarse de que se usa
       setTimeout(() => {
-        document.body.removeChild(rowClone);
-      }, 0);
+        document.body.removeChild(rowClone)
+      }, 0)
     },
-    handleDragOverRow(index) {
+    handleDragOverRow (index) {
       // Solo prevenir el comportamiento por defecto
     },
-    handleDropRow(index) {
+    handleDropRow (index) {
       // Movemos la fila a la nueva posición
       if (this.draggedRowIndex !== null && this.draggedRowIndex !== index) {
-        const draggedRow = this.rows.splice(this.draggedRowIndex, 1)[0];
-        this.rows.splice(index, 0, draggedRow);
+        const draggedRow = this.rows.splice(this.draggedRowIndex, 1)[0]
+        this.rows.splice(index, 0, draggedRow)
       }
       // Resetear el índice arrastrado
-      this.draggedRowIndex = null;
+      this.draggedRowIndex = null
     },
-      // Método para obtener la clase CSS correcta según el número de columnas y proporciones
-    getColumnClass(numColumns, firstColumnWidth) {
+    // Método para obtener la clase CSS correcta según el número de columnas y proporciones
+    getColumnClass (numColumns, firstColumnWidth) {
       console.log(firstColumnWidth)
       if (numColumns === 1) {
-        return 'single-column';
+        return 'single-column'
       } else if (numColumns === 2) {
         if (firstColumnWidth && firstColumnWidth === 67) {
-          return 'two-columns two-columns-67-33';
+          return 'two-columns two-columns-67-33'
         } else if (firstColumnWidth && firstColumnWidth === 33) {
-          return 'two-columns two-columns-33-67';
+          return 'two-columns two-columns-33-67'
         } else {
-          return 'two-columns';
+          return 'two-columns'
         }
       } else if (numColumns === 3) {
-        return 'three-columns';
+        return 'three-columns'
       } else if (numColumns === 4) {
-        return 'four-columns';
+        return 'four-columns'
       }
-      return ''; // Clase vacía si no se cumple ninguna condición
+      return '' // Clase vacía si no se cumple ninguna condición
     },
-      // Método para configurar el número de columnas y sus proporciones
-  configureColumns(numColumns, proportions = []) {
-    if (this.selectedRowIndex === null) {
-      console.log("Por favor, selecciona una fila primero.");
-      return;
-    }
+    // Método para configurar el número de columnas y sus proporciones
+    configureColumns (numColumns, proportions = []) {
+      if (this.selectedRowIndex === null) {
+        console.log('Por favor, selecciona una fila primero.')
+        return
+      }
 
-    // Crear la nueva configuración de columnas
-    const newColumns = Array.from({ length: numColumns }, (_, i) => ({
-      content: '',
-      backgroundColor: '#f0f0f0',
-      padding: { top: 0, right: 0, bottom: 0, left: 0 },
-      border: {
-              width: { top: 0, right: 0, bottom: 0, left: 0 },
-              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
-      },
-      width: proportions[i] || (100 / numColumns) + '%', // Asignar proporción o dividir en partes iguales
-    }));
+      // Crear la nueva configuración de columnas
+      const newColumns = Array.from({ length: numColumns }, (_, i) => ({
+        content: [],
+        backgroundColor: '#f0f0f0',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+        },
+        width: proportions[i] || (100 / numColumns) + '%' // Asignar proporción o dividir en partes iguales
+      }))
 
-    // Asignar las columnas configuradas a la fila seleccionada
-    this.rows[this.selectedRowIndex].columns = newColumns;
+      // Asignar las columnas configuradas a la fila seleccionada
+      this.rows[this.selectedRowIndex].columns = newColumns
 
-    // Actualizar las variables de estado
-    this.selectedRowColumns = numColumns;
-    this.activeColumn = 0;
+      // Actualizar las variables de estado
+      this.selectedRowColumns = numColumns
+      this.activeColumn = 0
 
-    console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`);
-  },
-  /// test generate mjml
-  generateMJML() {
-        let mjmlContent = `
+      console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`)
+    },
+    /// test generate mjml
+    generateMJML () {
+      let mjmlContent = `
             <mjml>
                 <mj-body>
-        `;
+        `
 
-        this.rows.forEach(row => {
-            mjmlContent += `<mj-section>`;
+      this.rows.forEach(row => {
+        mjmlContent += '<mj-section>'
 
-            row.columns.forEach(column => {
-                mjmlContent += `
+        row.columns.forEach(column => {
+          mjmlContent += `
                     <mj-column
                         background-color="${column.backgroundColor || '#ffffff'}"
                         padding="${column.padding.top}px ${column.padding.right}px ${column.padding.bottom}px ${column.padding.left}px"
@@ -745,18 +665,18 @@ export default {
                         border-bottom="${column.border.width.bottom}px solid ${column.border.color.bottom}"
                         border-left="${column.border.width.left}px solid ${column.border.color.left}"
                     >
-                `;
+                `
 
-                if (column.content) {
-                    const container = document.createElement('div');
-                    container.innerHTML = column.content;
+          if (column.content) {
+            const container = document.createElement('div')
+            container.innerHTML = column.content
 
-                    container.querySelectorAll('.block-wrapper').forEach(block => {
-                        const blockId = block.getAttribute('data-block-id');
+            container.querySelectorAll('.block-wrapper').forEach(block => {
+              const blockId = block.getAttribute('data-block-id')
 
-                        if (blockId.startsWith('button')) {
-                            const buttonElement = block.querySelector('a');
-                            const buttonMjml = `
+              if (blockId.startsWith('button')) {
+                const buttonElement = block.querySelector('a')
+                const buttonMjml = `
                                 <mj-button
                                     href="${buttonElement.getAttribute('href') || '#'}"
                                     background-color="${buttonElement.style.backgroundColor || '#1973b8'}"
@@ -764,65 +684,76 @@ export default {
                                 >
                                     ${buttonElement.innerHTML}
                                 </mj-button>
-                            `;
-                            mjmlContent += buttonMjml;
-                        } else if (blockId.startsWith('text')) {
-                            const textElement = block.querySelector('p, div');
-                            const textMjml = `
+                            `
+                mjmlContent += buttonMjml
+              } else if (blockId.startsWith('text')) {
+                const textElement = block.querySelector('p, div')
+                const textMjml = `
                                 <mj-text>
                                     ${textElement.innerHTML}
                                 </mj-text>
-                            `;
-                            mjmlContent += textMjml;
-                        }
-                    });
-                }
+                            `
+                mjmlContent += textMjml
+              }
+            })
+          }
 
-                mjmlContent += `</mj-column>`;
-            });
+          mjmlContent += '</mj-column>'
+        })
 
-            mjmlContent += `</mj-section>`;
-        });
+        mjmlContent += '</mj-section>'
+      })
 
-        mjmlContent += `
+      mjmlContent += `
                 </mj-body>
             </mjml>
-        `;
+        `
 
-        return mjmlContent;
+      return mjmlContent
     },
 
-    exportMJMLToHTML() {
-        const mjmlContent = this.generateMJML();
-        const { html } = mjml2html(mjmlContent);
-        this.saveTemplate()
-        console.log(html); // Aquí puedes manejar el HTML como desees
+    exportMJMLToHTML () {
+      const mjmlContent = this.generateMJML()
+      const { html } = mjml2html(mjmlContent)
+      this.saveTemplate()
+      console.log(html) // Aquí puedes manejar el HTML como desees
     },
-    saveTemplate() {
-  const templateData = JSON.stringify(this.rows);
+    saveTemplate () {
+      const templateData = JSON.stringify(this.rows)
       this.templateToLoad = templateData
-},
-loadTemplate() {
-  this.rows = JSON.parse(this.templateToLoad);
-},
-// Hover de las filas
-checkRowContent(rowIndex) {
-    const rowDOM = this.$refs.editorContainer.children[rowIndex];
-    const row = this.rows[rowIndex];
-    const hasContent = row.columns.some(
-      column => column.content.trim() !== ''
-    );
-    if (hasContent) {
-      rowDOM.classList.remove('hoverable');
-      console.log('remove')
-    } else {
-      rowDOM.classList.add('hoverable');
+    },
+    loadTemplate () {
+      this.rows = JSON.parse(this.templateToLoad)
+    },
+    // Hover de las filas
+    checkRowContent (rowIndex) {
+      const rowDOM = this.$refs.editorContainer.children[rowIndex]
+      const row = this.rows[rowIndex]
+      const hasContent = row.columns.some(
+        column => column.content.trim() !== ''
+      )
+      if (hasContent) {
+        rowDOM.classList.remove('hoverable')
+        console.log('remove')
+      } else {
+        rowDOM.classList.add('hoverable')
+      }
+    },
+
+    handleRowHover (rowIndex) {
+      this.checkRowContent(rowIndex)
+    },
+    generateButtonHtml (block) {
+      const alignmentStyle = block.properties.alignment ? `text-align: ${block.properties.alignment};` : ''
+
+      return `
+        <div style="${alignmentStyle}">
+          <a href="${block.properties.href}" style="display: inline-block; background-color: ${block.properties.backgroundColor}; color: ${block.properties.color}; padding: ${block.properties.padding}; border-radius: ${block.properties.borderRadius}; text-decoration: none;">
+            ${block.properties.text}
+          </a>
+        </div>
+      `
     }
-  },
-  
-  handleRowHover(rowIndex) {
-    this.checkRowContent(rowIndex);
-  }
   }
 }
 </script>
@@ -855,8 +786,8 @@ checkRowContent(rowIndex) {
 }
 
 /* .row:hover:not(.row-selected) {
-  outline: 1px dashed #1e90ff; 
-  background-color: #e6f2fb;  
+  outline: 1px dashed #1e90ff;
+  background-color: #e6f2fb;
 } */
 
 .row.hoverable:hover:not(.row-selected) {
@@ -943,7 +874,6 @@ border: 1px solid #ccc;
 display: flex;
 justify-content: center;
 align-items: center;
-height: 100px;
 }
 
 .column > div {
@@ -951,7 +881,6 @@ height: 100px;
   max-width: 600px;
   z-index: 1;
 }
-
 
 .column p {
 margin: 0;
@@ -998,16 +927,6 @@ transition: background-color 0.3s ease;
 
 .column-button:hover {
 background-color: #a9a9a9;
-}
-
- 
-
-.block-wrapper {
-  width: 100%;
-  max-width: 600px;
-  display: block;
-  box-sizing: border-box;
-  outline: none;
 }
 
 :deep(.selected-block) {
