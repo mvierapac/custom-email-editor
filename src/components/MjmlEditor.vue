@@ -1,11 +1,12 @@
 <template>
-  <div class="wrapper">
-    <div>
-      <button @click="clearCanvas">Limpiar Lienzo</button>
-      <button @click="addRow">Add Row</button>
-      <button @click="exportMJMLToHTML">Export html</button>
-      <button @click="loadTemplate">Import Json</button>
-
+  <div>
+    <div class="actions-buttons">
+      <button class="action-button" @click="clearCanvas">Limpiar Lienzo</button>
+      <button class="action-button" @click="addRow">Add Row</button>
+      <button class="action-button" @click="exportMJMLToHTML">Export html</button>
+      <button class="action-button" @click="loadTemplate">Import Json</button>
+    </div>
+    <div class="wrapper">
       <div class="canvas" ref="editorContainer">
         <div
           v-for="(row, rowIndex) in rows"
@@ -80,16 +81,10 @@
           @updateContent="updateTextBlockContent"
         />
       </div>
-    </div>
     <div class="lateral-panel">
-      <div class="configure-columns-panel">
-        <button class="column-button" @click="configureColumns(1)"> 100% </button>
-        <button class="column-button" @click="configureColumns(2)"> 2*50% </button>
-        <button class="column-button" @click="configureColumns(2, [67, 33])"> 67 / 33 </button>
-        <button class="column-button" @click="configureColumns(2, [33, 67])"> 33 / 67 </button>
-        <button class="column-button" @click="configureColumns(3)"> 33*3 </button>
-        <button class="column-button" @click="configureColumns(4)"> 25*4 </button>
-      </div>
+      <configure-columns-panel 
+        @configure-columns="configureColumns"
+      />
       <div class="tool-panel">
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="button">Arrastra MJ-Button</div>
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="text">Arrastra Texto MJML</div>
@@ -150,12 +145,14 @@
 
     </div>
   </div>
+  </div>
 </template>
 
 <script>
 import mjml2html from 'mjml-browser'
 import InlineEditor from './InlineEditor.vue'
 
+import ConfigureColumnsPanel from './lateralPanelComponents/ConfigureColumnsPanel.vue'
 import ColumnPropertiesPanel from './ColumnPropertiesPanel.vue'
 import BlockRenderer from './BlockRenderer.vue'
 import { buttonBlock } from './blocks'
@@ -176,7 +173,8 @@ export default {
   components: {
     InlineEditor,
     BlockRenderer,
-    ColumnPropertiesPanel
+    ColumnPropertiesPanel,
+    ConfigureColumnsPanel
   },
   data () {
     return {
@@ -768,7 +766,6 @@ export default {
 .canvas {
   border: 1px solid #ddd;
   padding: 20px;
-  margin-top: 10px;
   min-height: 70vh;
   min-width: 70%;
 }
@@ -900,7 +897,6 @@ cursor: grab;
   justify-content: space-between;
   gap: 16px;
   padding: 8px;
-  padding-top: 36px;
   padding-bottom: 0;
   align-items: flex-start;
 }
@@ -1064,5 +1060,30 @@ background-color: #a9a9a9;
 .four-columns .column {
   width: 25%;
 }
+
+.actions-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.action-button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+.action-button:hover {
+  border-color: #646cff;
+}
+.action-button:focus,
+.action-button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
 
 </style>
