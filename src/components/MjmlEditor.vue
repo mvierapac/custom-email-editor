@@ -616,33 +616,43 @@ export default {
       return '' // Clase vacía si no se cumple ninguna condición
     },
     // Método para configurar el número de columnas y sus proporciones
-    configureColumns (numColumns, proportions = []) {
+    configureColumns(numColumns, proportions = []) {
+      // Review: Una vez el panel solo salga al seleccionar una fila, se puede eliminar
       if (this.selectedRowIndex === null) {
-        console.log('Por favor, selecciona una fila primero.')
-        return
+        console.log('Por favor, selecciona una fila primero.');
+        return;
       }
 
-      // Crear la nueva configuración de columnas
-      const newColumns = Array.from({ length: numColumns }, (_, i) => ({
-        content: [],
-        backgroundColor: '#f0f0f0',
-        padding: { top: 0, right: 0, bottom: 0, left: 0 },
-        border: {
-          width: { top: 0, right: 0, bottom: 0, left: 0 },
-          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
-        },
-        width: proportions[i] || (100 / numColumns) + '%' // Asignar proporción o dividir en partes iguales
-      }))
+      const currentColumns = this.rows[this.selectedRowIndex].columns;
+      const newColumns = Array.from({ length: numColumns }, (_, i) => {
+        // Mantener el contenido y configuraciones si la columna actual existe
+        return currentColumns[i]
+          ? {
+              ...currentColumns[i], // Mantener la configuración y contenido actuales
+              width: proportions[i] || (100 / numColumns) + '%' // Ajustar el ancho según proporciones
+            }
+          : {
+              content: [], // Nueva columna sin contenido
+              backgroundColor: '#f0f0f0',
+              padding: { top: 0, right: 0, bottom: 0, left: 0 },
+              border: {
+                width: { top: 0, right: 0, bottom: 0, left: 0 },
+                color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+              },
+              width: proportions[i] || (100 / numColumns) + '%'
+            };
+      });
 
-      // Asignar las columnas configuradas a la fila seleccionada
-      this.rows[this.selectedRowIndex].columns = newColumns
+      // Asignar la nueva configuración de columnas a la fila seleccionada
+      this.rows[this.selectedRowIndex].columns = newColumns;
 
       // Actualizar las variables de estado
-      this.selectedRowColumns = numColumns
-      this.activeColumn = 0
+      this.selectedRowColumns = numColumns;
+      this.activeColumn = 0;
 
-      console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`)
+      console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`);
     },
+
     /// test generate mjml
     generateMJML () {
       let mjmlContent = `
@@ -945,6 +955,13 @@ background-color: #a9a9a9;
 
 .align-button {
   background-color: #e4c77be7;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .color-picker {

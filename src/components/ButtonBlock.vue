@@ -24,6 +24,7 @@
 .button-link {
   color: white;
   text-decoration: none;
+  border: none;
 }
 
   </style>

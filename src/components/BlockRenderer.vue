@@ -5,7 +5,8 @@
               backgroundColor: block.properties.backgroundColor,
               color: block.properties.color,
               padding: block.properties.padding,
-              borderRadius: block.properties.borderRadius 
+              borderRadius: block.properties.borderRadius,
+              border: 'none'
             }">
       <a :href=block.properties.href :style="{color:'white'}">{{ block.properties.text }}</a>
     </button>
