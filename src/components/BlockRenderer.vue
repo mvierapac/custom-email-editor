@@ -20,6 +20,13 @@
          color: block.properties.color
          }">
     </p>
+
+        <!-- Renderizado del bloque de imagen -->
+        <img v-else-if="block.type === 'image'"
+          :src="block.properties.src"
+          :alt="block.properties.alt || 'Imagen de ejemplo'"
+          :style="{ width: block.properties.width, height: block.properties.height }" 
+        />
     <!-- Puedes añadir otros tipos de bloques aquí -->
   </div>
 </template>

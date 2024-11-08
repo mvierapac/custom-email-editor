@@ -85,11 +85,15 @@
       <configure-columns-panel 
         @configure-columns="configureColumns"
       />
-      <div class="tool-panel">
+
+      <Tools-panel @drag-start="handleDragStart" />
+      
+      <!-- Review Eliminar después de componetizar si todo va bien -->
+      <!-- <div class="tool-panel">
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="button">Arrastra MJ-Button</div>
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="text">Arrastra Texto MJML</div>
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="image">MJ-image</div>
-      </div>
+      </div> -->
 
       <ColumnTabs
         v-if="selectedRowColumns > 0"
@@ -154,14 +158,16 @@ import InlineEditor from './InlineEditor.vue'
 import ConfigureColumnsPanel from './lateralPanelComponents/ConfigureColumnsPanel.vue'
 import ColumnPropertiesPanel from './lateralPanelComponents/ColumnPropertiesPanel.vue'
 import ColumnTabs from './lateralPanelComponents/ColumnTabs.vue'
+import ToolsPanel from './lateralPanelComponents/ToolsPanel.vue'
 import BlockRenderer from './BlockRenderer.vue'
 import { buttonBlock } from './blocks'
+
+import { generateTextButtonStructure } from '../constans'
 
 export default {
 
   mounted () {
     // Intercepta todos los clics en enlaces dentro del editor
-    console.log('mounted')
     this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation)
   },
 
@@ -175,7 +181,8 @@ export default {
     BlockRenderer,
     ColumnPropertiesPanel,
     ConfigureColumnsPanel,
-    ColumnTabs
+    ColumnTabs,
+    ToolsPanel
   },
   data () {
     return {
@@ -187,6 +194,7 @@ export default {
       selectedBlockRowIndex: null, // Fila del bloque seleccionado
       selectedBlockActiveColumn: null, // Columna del bloque seleccionado
       dragItemType: null,
+      colorDraggedBtn: null,
       selectedBlock: null,
       columnBackgroundColor: '#f0f0f0',
       buttonText: '',
@@ -225,10 +233,15 @@ export default {
       }
     },
 
-    onDragStart (event) {
-      this.dragItemType = event.target.getAttribute('data-type') // Obtiene el tipo de MJML a insertar
-      console.log('Arrastrando: ' + this.dragItemType)
+    handleDragStart(type, colorDraggedBtn = null) {
+      this.dragItemType = type;
+      this.colorDraggedBtn = colorDraggedBtn
     },
+    // Review Después de componetizar se cambió el método. Revisar y borrar
+    // onDragStart (event) {
+    //   this.dragItemType = event.target.getAttribute('data-type') // Obtiene el tipo de MJML a insertar
+    //   console.log('Arrastrando: ' + this.dragItemType)
+    // },
     onDrop (rowIndex, columnIndex) {
       if (!this.dragItemType) return
 
@@ -243,7 +256,7 @@ export default {
           properties: {
             text: 'Botón',
             href: '',
-            backgroundColor: '#1973b8',
+            backgroundColor: this.colorDraggedBtn,
             color: '#FFFFFF',
             padding: '12px 32px',
             borderRadius: '1px',
@@ -260,6 +273,24 @@ export default {
             color: '#000000'
           }
         }
+      } else if (this.dragItemType === 'custom-column') {
+        // Llamar a la función para generar la estructura compuesta con IDs únicos
+        const newStructure = generateTextButtonStructure();
+        newStructure.forEach(block => {
+          this.rows[rowIndex].columns[columnIndex].content.push(block);
+        }); 
+      } else if (this.dragItemType === 'image') {
+        // Crear un bloque de imagen con una URL predeterminada
+        newBlock = {
+          blockId: `image-${Date.now()}`,
+          type: 'image',
+          properties: {
+            src: 'https://picsum.photos/id/237/536/354', // URL de imagen por defecto
+            alt: 'Imagen de ejemplo', // Texto alternativo
+            width: '100%', // O cualquier valor de ancho predeterminado
+            height: 'auto'
+          }
+        };
       }
 
       // Actualizamos el contenido de la columna con el bloque JSON
@@ -730,6 +761,7 @@ export default {
     saveTemplate () {
       const templateData = JSON.stringify(this.rows)
       this.templateToLoad = templateData
+      console.log(templateData)
     },
     loadTemplate () {
       this.rows = JSON.parse(this.templateToLoad)

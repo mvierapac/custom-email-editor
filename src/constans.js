@@ -189,3 +189,44 @@ export const ckeditorConfig = {
     },
     placeholder: 'Type or paste your content here!',
 };
+
+
+// blockStructures.js
+
+export function generateTextButtonStructure() {
+    const timestamp = Date.now(); // Generar un timestamp para IDs únicos
+    return [
+      {
+        blockId: `text-${timestamp}-1`,
+        type: 'text',
+        properties: {
+          text: '<p style="text-align:center;"><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
+          fontSize: '14px',
+          color: '#000000'
+        }
+      },
+      {
+        blockId: `button-${timestamp}-2`,
+        type: 'button',
+        properties: {
+          text: 'Botón',
+          href: '',
+          backgroundColor: '#1973b8',
+          color: '#FFFFFF',
+          padding: '12px 32px',
+          borderRadius: '1px',
+          alignment: 'center'
+        }
+      },
+      {
+        blockId: `text-${timestamp}-3`,
+        type: 'text',
+        properties: {
+          text: '<p><span style="color:#004481;font-size:14px;">Este texto es de ejemplo. Haciendo clic puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
+          fontSize: '14px',
+          color: '#000000'
+        }
+      }
+    ];
+  }
+  
