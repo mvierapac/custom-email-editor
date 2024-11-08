@@ -90,16 +90,15 @@
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="text">Arrastra Texto MJML</div>
         <div class="draggable-item" draggable="true" @dragstart="onDragStart" data-type="image">MJ-image</div>
       </div>
-      <div class="column-tabs" v-if="selectedRowColumns > 0">
-        <div
-          v-for="col in selectedRowColumns"
-          :key="col"
-          :class="['tab', { 'active-tab': activeColumn === col - 1 }]"
-          @click="selectColumn(col - 1)"
-        >
-          Column {{ col }}
-        </div>
-      </div>
+
+      <ColumnTabs
+        v-if="selectedRowColumns > 0"
+        :columnsCount="selectedRowColumns"
+        :activeColumn="activeColumn"
+        @column-selected="selectColumn"
+        @add-column="configureColumns"
+        @remove-column="configureColumns"
+      />
       <!-- Herramientas y propiedades de columna -->
       <ColumnPropertiesPanel
         v-if="activeColumn !== null"
@@ -153,7 +152,8 @@ import mjml2html from 'mjml-browser'
 import InlineEditor from './InlineEditor.vue'
 
 import ConfigureColumnsPanel from './lateralPanelComponents/ConfigureColumnsPanel.vue'
-import ColumnPropertiesPanel from './ColumnPropertiesPanel.vue'
+import ColumnPropertiesPanel from './lateralPanelComponents/ColumnPropertiesPanel.vue'
+import ColumnTabs from './lateralPanelComponents/ColumnTabs.vue'
 import BlockRenderer from './BlockRenderer.vue'
 import { buttonBlock } from './blocks'
 
@@ -174,7 +174,8 @@ export default {
     InlineEditor,
     BlockRenderer,
     ColumnPropertiesPanel,
-    ConfigureColumnsPanel
+    ConfigureColumnsPanel,
+    ColumnTabs
   },
   data () {
     return {
@@ -902,11 +903,11 @@ cursor: grab;
 }
 
 .lateral-panel {
-  display: flex;
-  flex-wrap: wrap;
+  /* display: flex;
+  flex-wrap: wrap; */
   justify-content: space-between;
   gap: 16px;
-  padding: 8px;
+  padding: 12px;
   padding-bottom: 0;
   align-items: flex-start;
 }
@@ -994,6 +995,7 @@ background-color: #a9a9a9;
 }
 
 .tool-panel {
+  margin-top: 16px;
   width: 100%;
 }
 
