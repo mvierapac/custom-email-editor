@@ -6,6 +6,7 @@
       'padding-right': block.properties.containerPadding.right + 'px',
       'padding-bottom': block.properties.containerPadding.bottom + 'px',
       'padding-left': block.properties.containerPadding.left + 'px',
+      'text-align': block.properties.aligment || center
     }"
     @click="selectBlock"
   >
@@ -35,7 +36,7 @@
           :src="block.properties.src"
           :alt="block.properties.alt || 'Imagen de ejemplo'"
           :href="block.properties.href"
-          :style="{ width: block.properties.width, height: block.properties.height, display: 'block' }" 
+          :style="{ width: block.properties.width + '%', height: block.properties.height, display: 'inline-block', 'vertical-align': 'middle' }" 
         />
     <!-- Puedes añadir otros tipos de bloques aquí -->
   </div>
@@ -69,6 +70,10 @@ a {
 }
 
 .no-margin {
+  margin: 0;
+}
+
+.no-margin > p {
   margin: 0;
 }
 </style>

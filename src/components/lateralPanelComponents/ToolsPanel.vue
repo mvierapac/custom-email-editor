@@ -46,6 +46,14 @@
       >
         Custom Column
       </div>
+
+      <div 
+        class="draggable-tool" 
+        draggable="true" 
+        @dragstart="startDrag('footer')"
+      >
+        Footer
+      </div>
     </div>
   </template>
   

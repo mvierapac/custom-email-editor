@@ -20,6 +20,7 @@ import {
     Font
 } from 'ckeditor5';
 
+
 export const colors = [
     { label: 'navy', color: '#072146' },
     { label: 'dark-navy', color: '#041836' },
@@ -247,4 +248,36 @@ export function generateTextButtonStructure() {
       }
     ];
   }
+
+
+// footerConfig.js
+
+export function generateFooterStructure() {
+  const timestamp = Date.now();
+  
+  return {
+    columns: [
+      {
+        backgroundColor: "#072146",
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: "#000", right: "#000", bottom: "#000", left: "#000" }
+        },
+        content: [
+          {
+            blockId: `text-${timestamp}`,
+            type: "text",
+            properties: {
+              text: "<p style=\"text-align:center; margin: 0;\"><span style=\"color:#FFFFFF;\">La presente comunicación y su contenido va dirigida a empleados del Grupo BBVA.</span></p>",
+              fontSize: "14px",
+              color: "#000000",
+              containerPadding: { top: "10", right: "10", bottom: "10", left: "10" }
+            }
+          }
+        ]
+      }
+    ]
+  };
+}
   

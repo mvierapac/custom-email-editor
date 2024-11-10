@@ -123,7 +123,7 @@
         :containerPadding="selectedBlock.properties.containerPadding"
         @update-button-href="updateButtonHref"
         @update-button-text="updateButtonText"
-        @update-button-alignment="updateButtonAlignment"
+        @update-button-alignment="updateBlockAligment"
         @update-container-padding="updateContainerPadding"
       />
       <TextPropertiesPanel
@@ -134,9 +134,12 @@
       <ImagePropertiesPanel
         v-if="selectedBlock && selectedBlock.type === 'image'"
         :imageLink="selectedBlock.properties.href"
+        :imageWidth="selectedBlock.properties.width"
         :containerPadding="selectedBlock.properties.containerPadding"
         @update-container-padding="updateContainerPadding"
+        @update-block-alignment="updateBlockAligment"
         @update-img-href="updateImageHref"
+        @update-img-width="updateImageWidth"
       />
 <!--   Review. Eliminar tras componetizar el ButtonPropertiesPanel    
       <div class="properties-panel">
@@ -185,7 +188,7 @@ import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.
 import BlockRenderer from './BlockRenderer.vue'
 import { buttonBlock } from './blocks'
 
-import { generateTextButtonStructure } from '../constans'
+import { generateTextButtonStructure, generateFooterStructure } from '../constans'
 
 export default {
 
@@ -300,7 +303,7 @@ export default {
           blockId: blockId,
           type: 'text',
           properties: {
-            text: '<p style="text-align:center;">¡Texto MJML insertado!</p>',
+            text: '<p style="text-align:center; margin:0">¡Texto MJML insertado!</p>',
             fontSize: '14px',
             color: '#000000',
             containerPadding: {
@@ -323,11 +326,12 @@ export default {
           blockId: `image-${Date.now()}`,
           type: 'image',
           properties: {
-            src: 'https://picsum.photos/id/237/536/354', // URL de imagen por defecto
-            alt: 'Imagen de ejemplo', // Texto alternativo
+            src: 'https://picsum.photos/id/237/536/354',
+            alt: 'Imagen de ejemplo',
             href: '',
-            width: '100%', // O cualquier valor de ancho predeterminado
+            width: 100,
             height: 'auto',
+            aligment: 'center',
             containerPadding: {
               top: '10',
               right: '10',
@@ -336,6 +340,14 @@ export default {
             }
           }
         };
+      }
+
+      if (this.dragItemType === 'footer') {
+        // Generar la estructura del footer
+        const footerStructure = generateFooterStructure();
+        
+        // Agregar la estructura del footer a la columna seleccionada
+        this.rows[rowIndex].columns[columnIndex] = footerStructure.columns[0];
       }
 
       // Actualizamos el contenido de la columna con el bloque JSON
@@ -557,6 +569,7 @@ export default {
         console.log('No hay bloque seleccionado o el bloque seleccionado no es un botón.')
       }
     },
+    // Review: cambiado por updateBlockAligment
     updateButtonAlignment (alignment) {
       if (this.selectedBlock) {
         const blockId = this.selectedBlock.blockId
@@ -585,8 +598,19 @@ export default {
         this.selectedBlock.properties.href = newHref
         console.log(`Href del bloque con ID ${this.selectedBlockId} actualizado a: ${newHref}`)
       } else {
-        console.log('No hay bloque seleccionado o el bloque seleccionado no es un botón.')
+        console.log('No hay bloque seleccionado o el bloque seleccionado no es un img.')
       }
+    },
+    updateImageWidth (newWidth) {
+      if (this.selectedBlock && this.selectedBlock.type === 'image') {
+        this.selectedBlock.properties.width = newWidth
+        console.log(`width del bloque con ID ${this.selectedBlockId} actualizado a: ${newWidth}`)
+      } else {
+        console.log('No hay bloque seleccionado o el bloque seleccionado no es un img.')
+      }
+    },
+    updateBlockAligment (aligment) {
+      this.selectedBlock.properties.aligment = aligment
     },
     editText (rowIndex, columnIndex) {
       this.currentRow = rowIndex
@@ -596,6 +620,19 @@ export default {
     updateTextBlockContent (newContent) {
       console.log('newContent:', newContent)
 
+      // Ajusta el contenido de <p> para que todos tengan margin: 0
+      const adjustedContent = newContent.replace(/<p(\s+[^>]*)?>/g, (match, attrs) => {
+          if (attrs && attrs.includes('style=')) {
+              // Si ya existe un estilo, añade margin: 0 dentro del style actual
+              return match.replace(/style="([^"]*)"/, 'style="$1; margin: 0;"');
+          } else {
+              // Si no tiene estilo, añade uno con margin: 0
+              return `<p style="margin: 0;"${attrs || ''}>`;
+          }
+      });
+
+      console.log('Contenido después de aplicar margen:', adjustedContent);
+
       // Encuentra el bloque seleccionado en el JSON de datos
       const selectedRow = this.rows[this.currentRow]
       const selectedColumn = selectedRow.columns[this.currentColumn]
@@ -603,8 +640,8 @@ export default {
 
       if (block && block.type === 'text') {
         // Actualiza el contenido HTML completo en `text`
-        block.properties.text = newContent
-        console.log(`Contenido HTML del bloque ${block.blockId} actualizado: ${newContent}`)
+        block.properties.text = adjustedContent
+        console.log(`Contenido HTML del bloque ${block.blockId} actualizado: ${adjustedContent}`)
       } else {
         console.log('No se encontró el bloque de texto para actualizar.')
       }
