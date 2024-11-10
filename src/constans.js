@@ -202,7 +202,13 @@ export function generateTextButtonStructure() {
         properties: {
           text: '<p style="text-align:center;"><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
           fontSize: '14px',
-          color: '#000000'
+          color: '#000000',
+          containerPadding: {
+            top: '10px',
+            right: '10px',
+            bottom: '10px',
+            left: '10px',
+          }
         }
       },
       {
@@ -215,7 +221,13 @@ export function generateTextButtonStructure() {
           color: '#FFFFFF',
           padding: '12px 32px',
           borderRadius: '1px',
-          alignment: 'center'
+          alignment: 'center',
+          containerPadding: {
+            top: '10px',
+            right: '10px',
+            bottom: '10px',
+            left: '10px',
+          }
         }
       },
       {
@@ -224,7 +236,13 @@ export function generateTextButtonStructure() {
         properties: {
           text: '<p><span style="color:#004481;font-size:14px;">Este texto es de ejemplo. Haciendo clic puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
           fontSize: '14px',
-          color: '#000000'
+          color: '#000000',
+          containerPadding: {
+            top: '10px',
+            right: '10px',
+            bottom: '10px',
+            left: '10px',
+          }
         }
       }
     ];

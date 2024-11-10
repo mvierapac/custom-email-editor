@@ -1,5 +1,14 @@
 <template>
-  <div class="block-wrapper" :data-block-id="block.blockId"  @click="selectBlock">
+  <div class="block-wrapper" 
+    :data-block-id="block.blockId"
+    :style="{ 
+      'padding-top': block.properties.containerPadding.top,
+      'padding-right': block.properties.containerPadding.right,
+      'padding-bottom': block.properties.containerPadding.bottom,
+      'padding-left': block.properties.containerPadding.left,
+    }"
+    @click="selectBlock"
+  >
     <button v-if="block.type === 'button'"
             :style="{ 
               backgroundColor: block.properties.backgroundColor,

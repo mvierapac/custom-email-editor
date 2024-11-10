@@ -260,7 +260,13 @@ export default {
             color: '#FFFFFF',
             padding: '12px 32px',
             borderRadius: '1px',
-            aligment: 'center'
+            aligment: 'center',
+            containerPadding: {
+              top: '10px',
+              right: '10px',
+              bottom: '10px',
+              left: '10px',
+            }
           }
         }
       } else if (this.dragItemType === 'text') {
@@ -270,7 +276,13 @@ export default {
           properties: {
             text: '<p style="text-align:center;">¡Texto MJML insertado!</p>',
             fontSize: '14px',
-            color: '#000000'
+            color: '#000000',
+            containerPadding: {
+              top: '10px',
+              right: '10px',
+              bottom: '10px',
+              left: '10px',
+            }
           }
         }
       } else if (this.dragItemType === 'custom-column') {
@@ -288,7 +300,13 @@ export default {
             src: 'https://picsum.photos/id/237/536/354', // URL de imagen por defecto
             alt: 'Imagen de ejemplo', // Texto alternativo
             width: '100%', // O cualquier valor de ancho predeterminado
-            height: 'auto'
+            height: 'auto',
+            containerPadding: {
+              top: '10px',
+              right: '10px',
+              bottom: '10px',
+              left: '10px',
+            }
           }
         };
       }
