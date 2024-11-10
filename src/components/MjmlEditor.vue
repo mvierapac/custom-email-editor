@@ -96,7 +96,7 @@
       </div> -->
 
       <ColumnTabs
-        v-if="selectedRowColumns > 0"
+        v-if="activeColumn !== null"
         :columnsCount="selectedRowColumns"
         :activeColumn="activeColumn"
         @column-selected="selectColumn"
@@ -116,6 +116,29 @@
         @update-border-width="updateColumnBorderWidth"
         @update-border-color="updateColumnBorderColor"
       />
+      <ButtonPropertiesPanel
+        v-if="selectedBlock && selectedBlock.type === 'button'"
+        :buttonLink="selectedBlock.properties.href"
+        :buttonText="selectedBlock.properties.text"
+        :containerPadding="selectedBlock.properties.containerPadding"
+        @update-button-href="updateButtonHref"
+        @update-button-text="updateButtonText"
+        @update-button-alignment="updateButtonAlignment"
+        @update-container-padding="updateContainerPadding"
+      />
+      <TextPropertiesPanel
+        v-if="selectedBlock && selectedBlock.type === 'text'"
+        :containerPadding="selectedBlock.properties.containerPadding"
+        @update-container-padding="updateContainerPadding"
+      />
+      <ImagePropertiesPanel
+        v-if="selectedBlock && selectedBlock.type === 'image'"
+        :imageLink="selectedBlock.properties.href"
+        :containerPadding="selectedBlock.properties.containerPadding"
+        @update-container-padding="updateContainerPadding"
+        @update-img-href="updateImageHref"
+      />
+<!--   Review. Eliminar tras componetizar el ButtonPropertiesPanel    
       <div class="properties-panel">
         <div class="input-container">
           <label for="url-input">URL</label>
@@ -135,16 +158,12 @@
             @blur="updateButtonText(buttonText)"
             placeholder="Texto">
         </div>
-        <!-- <input type="text" v-model="buttonText" placeholder="Nuevo texto del botón" />
-        <button class="property-btn" @click="updateButtonText(buttonText)">Actualizar texto del botón</button>
-        <input type="text" v-model="buttonLink" placeholder="Link del botón" />
-        <button class="property-btn" @click="updateButtonHref(buttonLink)">Actualizar href del botón</button> -->
         <div class="align-buttons">
           <button class="align-button" @click="updateButtonAlignment('left')">Izda</button>
           <button class="align-button" @click="updateButtonAlignment('center')">Centro</button>
           <button class="align-button" @click="updateButtonAlignment('right')">Drcha</button>
         </div>
-      </div>
+      </div> -->
 
     </div>
   </div>
@@ -159,6 +178,10 @@ import ConfigureColumnsPanel from './lateralPanelComponents/ConfigureColumnsPane
 import ColumnPropertiesPanel from './lateralPanelComponents/ColumnPropertiesPanel.vue'
 import ColumnTabs from './lateralPanelComponents/ColumnTabs.vue'
 import ToolsPanel from './lateralPanelComponents/ToolsPanel.vue'
+import ButtonPropertiesPanel from './lateralPanelComponents/ButtonPropertiesPanel.vue'
+import TextPropertiesPanel from './lateralPanelComponents/TextPropertiesPanel.vue'
+import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.vue'
+
 import BlockRenderer from './BlockRenderer.vue'
 import { buttonBlock } from './blocks'
 
@@ -182,7 +205,10 @@ export default {
     ColumnPropertiesPanel,
     ConfigureColumnsPanel,
     ColumnTabs,
-    ToolsPanel
+    ToolsPanel,
+    ButtonPropertiesPanel,
+    TextPropertiesPanel,
+    ImagePropertiesPanel
   },
   data () {
     return {
@@ -262,10 +288,10 @@ export default {
             borderRadius: '1px',
             aligment: 'center',
             containerPadding: {
-              top: '10px',
-              right: '10px',
-              bottom: '10px',
-              left: '10px',
+              top: '10',
+              right: '10',
+              bottom: '10',
+              left: '10',
             }
           }
         }
@@ -278,10 +304,10 @@ export default {
             fontSize: '14px',
             color: '#000000',
             containerPadding: {
-              top: '10px',
-              right: '10px',
-              bottom: '10px',
-              left: '10px',
+              top: '10',
+              right: '10',
+              bottom: '10',
+              left: '10',
             }
           }
         }
@@ -299,13 +325,14 @@ export default {
           properties: {
             src: 'https://picsum.photos/id/237/536/354', // URL de imagen por defecto
             alt: 'Imagen de ejemplo', // Texto alternativo
+            href: '',
             width: '100%', // O cualquier valor de ancho predeterminado
             height: 'auto',
             containerPadding: {
-              top: '10px',
-              right: '10px',
-              bottom: '10px',
-              left: '10px',
+              top: '10',
+              right: '10',
+              bottom: '10',
+              left: '10',
             }
           }
         };
@@ -338,6 +365,7 @@ export default {
       this.selectedRowColumns = 0
       this.selectedRowIndex = null
       this.activeColumn = null
+      this.selectedBlock = null
     },
     addRow () {
       this.rows.push({
@@ -507,6 +535,12 @@ export default {
       blockElement.classList.add('selected-block')
     },
 
+    updateContainerPadding ({ side, value }) {
+      if (this.selectedBlock) {
+        this.selectedBlock.properties.containerPadding[side] = value
+      }
+    },
+
     updateButtonText (newText) {
       if (this.selectedBlock) {
         this.selectedBlock.properties.text = newText
@@ -544,6 +578,14 @@ export default {
         //   // Actualizar el contenido de la columna con el cambio aplicado
         //   this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
         // }
+      }
+    },
+    updateImageHref (newHref) {
+      if (this.selectedBlock && this.selectedBlock.type === 'image') {
+        this.selectedBlock.properties.href = newHref
+        console.log(`Href del bloque con ID ${this.selectedBlockId} actualizado a: ${newHref}`)
+      } else {
+        console.log('No hay bloque seleccionado o el bloque seleccionado no es un botón.')
       }
     },
     editText (rowIndex, columnIndex) {
@@ -996,23 +1038,6 @@ background-color: #a9a9a9;
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.align-buttons {
-  margin-top: 16px;
-  display: flex;
-  gap: 12px;
-}
-
-.align-button {
-  background-color: #e4c77be7;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
 }
 
 .color-picker {

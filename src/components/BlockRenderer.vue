@@ -2,10 +2,10 @@
   <div class="block-wrapper" 
     :data-block-id="block.blockId"
     :style="{ 
-      'padding-top': block.properties.containerPadding.top,
-      'padding-right': block.properties.containerPadding.right,
-      'padding-bottom': block.properties.containerPadding.bottom,
-      'padding-left': block.properties.containerPadding.left,
+      'padding-top': block.properties.containerPadding.top + 'px',
+      'padding-right': block.properties.containerPadding.right + 'px',
+      'padding-bottom': block.properties.containerPadding.bottom + 'px',
+      'padding-left': block.properties.containerPadding.left + 'px',
     }"
     @click="selectBlock"
   >
@@ -34,7 +34,8 @@
         <img v-else-if="block.type === 'image'"
           :src="block.properties.src"
           :alt="block.properties.alt || 'Imagen de ejemplo'"
-          :style="{ width: block.properties.width, height: block.properties.height }" 
+          :href="block.properties.href"
+          :style="{ width: block.properties.width, height: block.properties.height, display: 'block' }" 
         />
     <!-- Puedes añadir otros tipos de bloques aquí -->
   </div>

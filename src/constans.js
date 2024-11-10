@@ -238,10 +238,10 @@ export function generateTextButtonStructure() {
           fontSize: '14px',
           color: '#000000',
           containerPadding: {
-            top: '10px',
-            right: '10px',
-            bottom: '10px',
-            left: '10px',
+            top: '10',
+            right: '10',
+            bottom: '10',
+            left: '10',
           }
         }
       }
