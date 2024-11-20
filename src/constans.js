@@ -194,14 +194,14 @@ export const ckeditorConfig = {
 
 // blockStructures.js
 
-export function generateTextButtonStructure() {
+export function generateTextButtonStructure() { 
     const timestamp = Date.now(); // Generar un timestamp para IDs únicos
     return [
       {
         blockId: `text-${timestamp}-1`,
         type: 'text',
         properties: {
-          text: '<p style="text-align:center;"><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
+          text: '<p style="text-align:center; margin:0; "><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
           fontSize: '14px',
           color: '#000000',
           containerPadding: {
@@ -235,7 +235,7 @@ export function generateTextButtonStructure() {
         blockId: `text-${timestamp}-3`,
         type: 'text',
         properties: {
-          text: '<p><span style="color:#004481;font-size:14px;">Este texto es de ejemplo. Haciendo clic puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
+          text: '<p style="text-align:center; margin:0"><span style="color:#004481;font-size:14px;">Este texto es de ejemplo. Haciendo clic puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
           fontSize: '14px',
           color: '#000000',
           containerPadding: {

@@ -1,5 +1,5 @@
 <template>
-  <div class="block-wrapper" 
+  <div class="block-wrapper"
     :data-block-id="block.blockId"
     :style="{ 
       'padding-top': block.properties.containerPadding.top + 'px',
@@ -10,6 +10,27 @@
     }"
     @click="selectBlock"
   >
+
+    <!-- Indicador de arrastre solo visible en bloques seleccionados -->
+    <!-- <div
+      v-if="isSelected"
+      class="drag-handle-block"
+      @dragstart="handleDragStart(block.blockId)"
+      draggable="true"
+    >
+      <span class="drag-icon">
+        <i class="fas fa-arrows-alt"></i>
+      </span>
+    </div> -->
+    <!-- Pop-up de acciones -->
+    <div v-if="isSelected" class="block-action-panel">
+      <button class="block-action-icon delete-icon" @click.stop="emitDeleteBlock">
+        🗑️
+      </button>
+      <button class="block-action-icon copy-icon" @click.stop="emitDuplicateBlock">
+        📄
+      </button>
+    </div>
     <button v-if="block.type === 'button'"
             :style="{ 
               backgroundColor: block.properties.backgroundColor,
@@ -45,11 +66,23 @@
 <script>
 export default {
   props: {
-    block: Object
+    block: Object,
+    isSelected: Boolean
+  },
+  data() {
+    return {
+      dragStartAllowed: false,
+    };
   },
   methods: {
     selectBlock() {
       this.$emit('block-selected', this.block.blockId);
+    },
+    emitDeleteBlock() {
+      this.$emit('delete-block', this.block.blockId);
+    },
+    emitDuplicateBlock() {
+      this.$emit('duplicate-block', this.block.blockId);
     }
   }
 };
@@ -61,6 +94,7 @@ a {
 
 }
 .block-wrapper {
+  position: relative;
   width: 100%;
   max-width: 600px;
   display: block;
@@ -75,5 +109,31 @@ a {
 
 .no-margin > p {
   margin: 0;
+}
+
+.block-action-panel {
+  z-index: 21;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translateY(100%);
+  display: flex;
+  gap: 8px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+}
+
+.block-action-icon {
+  font-size: 16px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.block-action-icon:hover {
+  color: #007bff;
 }
 </style>

@@ -11,7 +11,7 @@
         <div
           v-for="(row, rowIndex) in rows"
           :key="rowIndex"
-          :class="['row', { 'row-selected': row.isSelected }, getColumnClass(row.columns.length, row.columns[0].width)]"
+          :class="['row', { 'row-selected': row.isSelected }, {'z-index-row': this.selectedRowIndex === rowIndex}, getColumnClass(row.columns.length, row.columns[0].width)]"
           @click="selectRow(rowIndex)"
           @dragover.prevent="handleDragOverRow(rowIndex)"
           @drop="handleDropRow(rowIndex)"
@@ -59,14 +59,17 @@
               }"
               :class="{'column-outlined': !column.content.length, 'column-min-height': !column.content.length}"
               @dragover.prevent
-              @drop="onDrop(rowIndex, columnIndex)"
+              @drop="addBlockToCanvas(rowIndex, columnIndex)"
             >
               <div  v-if="column.content.length">
                 <BlockRenderer
                   v-for="block in column.content"
                   :key="block.blockId"
                   :block="block"
+                  :isSelected ="selectedBlockId === block.blockId"
                   @block-selected="handleBlockSelection"
+                  @delete-block="handleDeleteBlock" 
+                  @duplicate-block="handleDuplicateBlock"
                 />
               </div>
             <p v-else>Columna {{ columnIndex + 1 }}</p>
@@ -141,32 +144,6 @@
         @update-img-href="updateImageHref"
         @update-img-width="updateImageWidth"
       />
-<!--   Review. Eliminar tras componetizar el ButtonPropertiesPanel    
-      <div class="properties-panel">
-        <div class="input-container">
-          <label for="url-input">URL</label>
-          <input
-            type="text"
-            id="url-input"
-            v-model="buttonLink"
-            @blur="updateButtonHref(buttonLink)"
-            placeholder="https://example.com">
-        </div>
-        <div class="input-container">
-          <label for="button-text">Texto</label>
-          <input
-            type="text"
-            id="button-text"
-            v-model="buttonText"
-            @blur="updateButtonText(buttonText)"
-            placeholder="Texto">
-        </div>
-        <div class="align-buttons">
-          <button class="align-button" @click="updateButtonAlignment('left')">Izda</button>
-          <button class="align-button" @click="updateButtonAlignment('center')">Centro</button>
-          <button class="align-button" @click="updateButtonAlignment('right')">Drcha</button>
-        </div>
-      </div> -->
 
     </div>
   </div>
@@ -271,7 +248,7 @@ export default {
     //   this.dragItemType = event.target.getAttribute('data-type') // Obtiene el tipo de MJML a insertar
     //   console.log('Arrastrando: ' + this.dragItemType)
     // },
-    onDrop (rowIndex, columnIndex) {
+    addBlockToCanvas (rowIndex, columnIndex) {
       if (!this.dragItemType) return
 
       const blockId = `${this.dragItemType}-${Date.now()}`
@@ -460,6 +437,7 @@ export default {
       // Deseleccionar bloque
       this.removeHighlightBlock()
       this.selectedBlock = null
+      this.selectedBlockId = null
 
       // Actualizamos el índice de la fila seleccionada
       this.selectedRowIndex = index
@@ -546,6 +524,37 @@ export default {
       // Añadir el resaltado al bloque seleccionado
       blockElement.classList.add('selected-block')
     },
+
+  handleDeleteBlock(blockId) {
+    const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
+    if (column) {
+      column.content = column.content.filter(block => block.blockId !== blockId);
+    }
+  },
+  handleDuplicateBlock(blockId) {
+    const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
+    if (column) {
+      const blockToDuplicate = column.content.find(block => block.blockId === blockId);
+      if (blockToDuplicate) {
+        const newBlock = JSON.parse(JSON.stringify(blockToDuplicate));
+      
+        // Genera un nuevo ID único para el bloque duplicado
+        newBlock.blockId = `${newBlock.type}-${Date.now()}`;
+        const index = column.content.findIndex(block => block.blockId === blockId);
+        column.content.splice(index + 1, 0, newBlock);
+      }
+    }
+  },
+  getColumnFromBlockId(blockId) {
+    for (const row of this.rows) {
+      for (const column of row.columns) {
+        if (column.content.some(block => block.blockId === blockId)) {
+          return column;
+        }
+      }
+    }
+    return null;
+  },
 
     updateContainerPadding ({ side, value }) {
       if (this.selectedBlock) {
@@ -1117,6 +1126,10 @@ background-color: #a9a9a9;
   gap: 10px;
 }
 
+.z-index-row {
+  z-index: 20;
+}
+
 .columns-container {
   width: 600px;
   margin: 0 auto; /* Centra el contenedor en la fila */
@@ -1215,6 +1228,5 @@ background-color: #a9a9a9;
 .action-button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
-
 
 </style>
