@@ -54,6 +54,35 @@
       >
         Footer
       </div>
+
+      <div 
+        class="draggable-tool" 
+        draggable="true" 
+        @dragstart="startDrag('threeSeven')"
+      >
+        3/7
+      </div>
+      <div 
+        class="draggable-tool" 
+        draggable="true" 
+        @dragstart="startDrag('sevenThree')"
+      >
+        7/3
+      </div>
+      <div 
+        class="draggable-tool" 
+        draggable="true" 
+        @dragstart="startDrag('threeSevenWithMargins')"
+      >
+        3/7 con márgenes
+      </div> 
+      <div 
+        class="draggable-tool" 
+        draggable="true" 
+        @dragstart="startDrag('sevenThreeWithMargins')"
+      >
+        7/3 con márgenes
+      </div>       
     </div>
   </template>
   

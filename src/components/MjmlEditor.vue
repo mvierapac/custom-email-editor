@@ -169,7 +169,7 @@ import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.
 import BlockRenderer from './BlockRenderer.vue'
 import { buttonBlock } from './blocks'
 
-import { generateTextButtonStructure, generateFooterStructure } from '../constans'
+import {generateTextButtonStructure, generateFooterStructure, generateThreeSevenStructure, generateSevenThreeStructure, generateThreeSevenWithMarginStructure, generateSevenThreeWithMarginStructure } from '../generateBlocksFunctions'
 
 export default {
 
@@ -327,18 +327,47 @@ export default {
         this.rows[rowIndex].columns[columnIndex] = footerStructure.columns[0];
       }
 
+      if (this.dragItemType === 'threeSeven') {
+        // Generar la estructura del footer
+        const threeSevenStructure = generateThreeSevenStructure();
+        
+        // Agregar la estructura del footer a la columna seleccionada
+        this.rows[rowIndex] = threeSevenStructure
+      }
+
+      if (this.dragItemType === 'sevenThree') {
+        // Generar la estructura del footer
+        const sevenThreeStructure = generateSevenThreeStructure();
+        
+        // Agregar la estructura del footer a la columna seleccionada
+        this.rows[rowIndex] = sevenThreeStructure
+      }
+
+      if (this.dragItemType === 'sevenThreeWithMargins') {
+        // Generar la estructura del footer
+        const sevenThreeStructure = generateSevenThreeWithMarginStructure();
+        
+        // Agregar la estructura del footer a la columna seleccionada
+        this.rows[rowIndex] = sevenThreeStructure
+      }
+
+      if (this.dragItemType === 'threeSevenWithMargins') {
+        // Generar la estructura del footer
+        const structure = generateThreeSevenWithMarginStructure();
+        
+        // Agregar la estructura del footer a la columna seleccionada
+        this.rows[rowIndex] = structure
+      }
+
       // Actualizamos el contenido de la columna con el bloque JSON
       if (newBlock) {
         this.rows[rowIndex].columns[columnIndex].content.push(newBlock)
+        this.handleBlockSelection(blockId)
       }
 
       // Reseteamos el tipo de bloque arrastrado
       this.dragItemType = null
 
-      this.test(blockId)
-    },
-    test (blockId) {
-      this.handleBlockSelection(blockId)
     },
     clearCanvas () {
       // Limpiamos todas las filas
