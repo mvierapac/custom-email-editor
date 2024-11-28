@@ -3,11 +3,11 @@
     :class="{'selected-block': isSelected}"
     :data-block-id="block.blockId"
     :style="{ 
-      'padding-top': block.properties.containerPadding.top + 'px',
-      'padding-right': block.properties.containerPadding.right + 'px',
-      'padding-bottom': block.properties.containerPadding.bottom + 'px',
-      'padding-left': block.properties.containerPadding.left + 'px',
-      'text-align': block.properties.aligment || 'center'
+      'padding-top': block.properties?.containerPadding.top + 'px',
+      'padding-right': block.properties?.containerPadding.right + 'px',
+      'padding-bottom': block.properties?.containerPadding.bottom + 'px',
+      'padding-left': block.properties?.containerPadding.left + 'px',
+      'text-align': block.properties?.aligment || 'center'
     }"
     @click="selectBlock"
   >

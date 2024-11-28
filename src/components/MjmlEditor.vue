@@ -36,7 +36,7 @@
             <div class="row-action-icon delete-icon" @click="handleDeleteRow(rowIndex)">
               🗑️
             </div>
-            <div class="row-action-icon copy-icon" @click="handleCopyRow(rowIndex)">
+            <div class="row-action-icon copy-icon" @click="handleDuplicateRow(rowIndex)">
               📄
             </div>
           </div>
@@ -387,45 +387,36 @@ export default {
       this.selectedRowColumns = 0
       this.activeColumn = null
     },
-    handleCopyRow (rowIndex) {
-      console.log(`Copiar fila ${rowIndex}`)
-      const originalRow = this.rows[rowIndex]
+    handleDuplicateRow(rowIndex) {
+      console.log(`Duplicar fila ${rowIndex}`);
 
-      // Clonar la fila original para modificarla sin afectar al original
-      const clonedRow = JSON.parse(JSON.stringify(originalRow))
+      // Clonar la fila original
+      const originalRow = this.rows[rowIndex];
+      const clonedRow = JSON.parse(JSON.stringify(originalRow));
 
-      // Recorrer cada columna y actualizar los `data-block-id` y clases dentro del contenido
+      // Recorrer cada columna y actualizar los `blockId` en el contenido
       clonedRow.columns = clonedRow.columns.map(column => {
-        const tempContainer = document.createElement('div')
-        tempContainer.innerHTML = column.content
+        return {
+          ...column,
+          content: column.content.map(block => {
+            // Generar un nuevo blockId para cada bloque
+            const oldBlockId = block.blockId;
+            const prefix = oldBlockId.split('-')[0]; // Obtener el prefijo (button, text, image, etc.)
+            const newBlockId = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`; // Generar un nuevo ID único
 
-        // Selecciona todos los elementos que tengan `data-block-id` para actualizar sus identificadores
-        const blocks = tempContainer.querySelectorAll('[data-block-id]')
-        blocks.forEach(block => {
-          const oldBlockId = block.getAttribute('data-block-id')
-          const prefix = oldBlockId.split('-')[0] // Obtener el prefijo (button, text, image, etc.)
-          const newBlockId = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}` // Generar un nuevo ID único con el prefijo adecuado
-
-          // Actualizar el `data-block-id` en el contenedor
-          block.setAttribute('data-block-id', newBlockId)
-
-          // Solo actualizar las clases en los hijos que tienen `oldBlockId` como clase
-          const childElements = block.querySelectorAll(`.${oldBlockId}`)
-          childElements.forEach(child => {
-            child.classList.remove(oldBlockId)
-            child.classList.add(newBlockId)
+            // Actualizar el blockId y devolver el bloque actualizado
+            return {
+              ...block,
+              blockId: newBlockId
+            };
           })
-        })
-
-        // Actualizar el contenido de la columna con los nuevos IDs
-        column.content = tempContainer.innerHTML
-        return column
-      })
+        };
+      });
 
       // Insertar la fila clonada justo después de la fila original
-      this.rows.splice(rowIndex + 1, 0, clonedRow)
+      this.rows.splice(rowIndex + 1, 0, clonedRow);
 
-      console.log(`Fila ${rowIndex} copiada en la posición ${rowIndex + 1}.`)
+      console.log(`Fila ${rowIndex} duplicada en la posición ${rowIndex + 1}.`);
     },
     selectRow (index) {
       const clickedElement = event.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
