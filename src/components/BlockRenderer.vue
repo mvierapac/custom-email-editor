@@ -52,6 +52,28 @@
          }">
     </p>
 
+    <p v-else-if="block.type === 'texticon'"
+         class="no-margin"
+         :class="block.blockId"
+         :style="{ 
+         fontSize: block.properties.fontSize,
+         color: block.properties.color
+         }">
+        <img 
+          :src="block.properties.iconSrc" 
+          :width="block.properties.iconSize + 'px'" 
+          alt="Icono" 
+          style="display: inline-block; vertical-align: middle;" 
+        />
+        <span 
+          :style="{ 
+            fontSize: block.properties.fontSize,
+            color: block.properties.color 
+          }"
+          v-html="block.properties.text"
+        ></span>
+    </p>
+
         <!-- Renderizado del bloque de imagen -->
         <img v-else-if="block.type === 'image'"
           :src="block.properties.src"

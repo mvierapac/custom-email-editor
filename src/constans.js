@@ -11,6 +11,14 @@ import {
 	FontSize,
 	Italic,
 	Link,
+  ImageInline,
+  ImageInsertViaUrl,
+	ImageResize,
+	ImageStyle,
+	ImageTextAlternative,
+	ImageToolbar,
+	ImageUpload,
+  ImageBlockEditing,
 	Paragraph,
 	SelectAll,
 	Strikethrough,
@@ -94,7 +102,24 @@ export const colors = [
 
 
 export const ckeditorConfig = {
-    plugins: [Bold, Link, Italic, Underline, Mention, Paragraph, Alignment, Font],
+    plugins: [
+      Bold,
+      Link,
+      Italic,
+      Underline,
+      Mention,
+      Paragraph,
+      Alignment,
+      Font,
+      ImageInline,
+      ImageInsertViaUrl,
+      ImageResize,
+      ImageBlockEditing,
+      ImageStyle,
+      ImageTextAlternative,
+      ImageToolbar,
+      ImageUpload
+    ],
     toolbar: [
       'fontsize', 'fontColor', 'fontBackgroundColor',
       '|',
@@ -105,8 +130,19 @@ export const ckeditorConfig = {
       '|',
       'bold', 'italic', 'underline',
       '|',
-      'link'
+      'link',
+      'insertImage'
     ],
+    image: {
+      resizeUnit: 'px',
+      toolbar: [
+        'imageStyle:inline',
+        'imageStyle:block',
+        'imageStyle:side',
+        '|', 
+        'resizeImage'
+      ]
+    },
     fontSize: {
       options: [
         { title: 9, model: '9px' },

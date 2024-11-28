@@ -130,7 +130,7 @@
         @update-container-padding="updateContainerPadding"
       />
       <TextPropertiesPanel
-        v-if="selectedBlock && selectedBlock.type === 'text'"
+        v-if="selectedBlock && (selectedBlock.type === 'text' || selectedBlock.type === 'texticon')"
         :containerPadding="selectedBlock.properties.containerPadding"
         @update-container-padding="updateContainerPadding"
       />
