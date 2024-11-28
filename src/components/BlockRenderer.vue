@@ -1,12 +1,13 @@
 <template>
   <div class="block-wrapper"
+    :class="{'selected-block': isSelected}"
     :data-block-id="block.blockId"
     :style="{ 
       'padding-top': block.properties.containerPadding.top + 'px',
       'padding-right': block.properties.containerPadding.right + 'px',
       'padding-bottom': block.properties.containerPadding.bottom + 'px',
       'padding-left': block.properties.containerPadding.left + 'px',
-      'text-align': block.properties.aligment || center
+      'text-align': block.properties.aligment || 'center'
     }"
     @click="selectBlock"
   >
@@ -24,6 +25,20 @@
     </div> -->
     <!-- Pop-up de acciones -->
     <div v-if="isSelected" class="block-action-panel">
+      <button 
+        v-if="showUpBtn" 
+        class="block-action-icon" 
+        @click.stop="emitUpBlock"
+      >
+        <v-icon>mdi-chevron-up</v-icon>
+      </button>
+      <button 
+        v-if="showDownBtn" 
+        class="block-action-icon" 
+        @click.stop="emitDownBlock"
+      >
+        <v-icon>mdi-chevron-down</v-icon>
+      </button>
       <button class="block-action-icon delete-icon" @click.stop="emitDeleteBlock">
         🗑️
       </button>
@@ -89,7 +104,9 @@
 export default {
   props: {
     block: Object,
-    isSelected: Boolean
+    isSelected: Boolean,
+    showUpBtn: Boolean,
+    showDownBtn: Boolean
   },
   data() {
     return {
@@ -105,6 +122,12 @@ export default {
     },
     emitDuplicateBlock() {
       this.$emit('duplicate-block', this.block.blockId);
+    },
+    emitDownBlock() {
+      this.$emit('down-block');
+    },
+    emitUpBlock() {
+      this.$emit('up-block');
     }
   }
 };
@@ -123,6 +146,12 @@ a {
   box-sizing: border-box;
   outline: none;
   padding: 10px;
+}
+
+.selected-block {
+  outline: 2px solid #007bff;
+  outline-offset: -1px;
+  box-sizing: border-box;
 }
 
 .no-margin {

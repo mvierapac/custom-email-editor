@@ -68,6 +68,7 @@
   </template>
   
   <script>
+
   export default {
     props: {
       columnBackgroundColor: {
@@ -127,18 +128,24 @@
         this.localBorderWidth[side.toLowerCase()]++;
         this.updateBorderWidth(side);
       },
-        decreaseBorderWidth(side) {
-            if (this.localBorderWidth[side.toLowerCase()] > 0) {
-            this.localBorderWidth[side.toLowerCase()]--;
-            this.updateBorderWidth(side);
-            }
-        },
-        updateBorderWidth(side) {
-            this.$emit('update-border-width', { side: side.toLowerCase(), value: this.localBorderWidth[side.toLowerCase()] });
-        },
-        updateBorderColor(side) {
-            this.$emit('update-border-color', { side: side.toLowerCase(), value: this.localBorderColor[side.toLowerCase()] });
-        }
+      decreaseBorderWidth(side) {
+          if (this.localBorderWidth[side.toLowerCase()] > 0) {
+          this.localBorderWidth[side.toLowerCase()]--;
+          this.updateBorderWidth(side);
+          }
+      },
+      updateBorderWidth(side) {
+          this.$emit('update-border-width', { side: side.toLowerCase(), value: this.localBorderWidth[side.toLowerCase()] });
+      },
+      updateBorderColor(side) {
+          this.$emit('update-border-color', { side: side.toLowerCase(), value: this.localBorderColor[side.toLowerCase()] });
+      },
+      upBlock(indx) {
+        this.$emit('up-block', indx );
+      },
+      downBlock (indx) {
+        this.$emit('down-block', indx );
+      }
     },
     watch: {
       columnBackgroundColor (newColor) {
@@ -161,6 +168,7 @@
   
   .column-properties-panel {
     padding: 16px;
+    padding-top: 8px;
   }
 
   .property-wrapper {

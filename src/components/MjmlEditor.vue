@@ -63,13 +63,17 @@
             >
               <div  v-if="column.content.length">
                 <BlockRenderer
-                  v-for="block in column.content"
+                  v-for="(block, index) in column.content"
                   :key="block.blockId"
                   :block="block"
                   :isSelected ="selectedBlockId === block.blockId"
+                  :showUpBtn="index !== 0 && column.content.length > 1"
+                  :showDownBtn="index !== column.content.length-1"
                   @block-selected="handleBlockSelection"
                   @delete-block="handleDeleteBlock" 
                   @duplicate-block="handleDuplicateBlock"
+                  @up-block="upBlock(index)"
+                  @down-block="downBlock(index)"
                 />
               </div>
             <p v-else>Columna {{ columnIndex + 1 }}</p>
@@ -223,10 +227,10 @@ export default {
       templateToLoad: null,
       // CKEDITOR
       editingText: false,
-      currentRow: null,
-      currentColumn: null,
       draggedRowIndex: null
     }
+  },
+  computed: {
   },
   methods: {
     preventLinkNavigation (event) {
@@ -243,11 +247,7 @@ export default {
       this.dragItemType = type;
       this.colorDraggedBtn = colorDraggedBtn
     },
-    // Review Después de componetizar se cambió el método. Revisar y borrar
-    // onDragStart (event) {
-    //   this.dragItemType = event.target.getAttribute('data-type') // Obtiene el tipo de MJML a insertar
-    //   console.log('Arrastrando: ' + this.dragItemType)
-    // },
+
     addBlockToCanvas (rowIndex, columnIndex) {
       if (!this.dragItemType) return
 
@@ -334,6 +334,11 @@ export default {
 
       // Reseteamos el tipo de bloque arrastrado
       this.dragItemType = null
+
+      this.test(blockId)
+    },
+    test (blockId) {
+      this.handleBlockSelection(blockId)
     },
     clearCanvas () {
       // Limpiamos todas las filas
@@ -435,7 +440,6 @@ export default {
       })
 
       // Deseleccionar bloque
-      this.removeHighlightBlock()
       this.selectedBlock = null
       this.selectedBlockId = null
 
@@ -481,13 +485,15 @@ export default {
             if (isText) {
               // Inicia CKEditor para bloques de texto
               this.editText(rowIndex, columnIndex)
-              const textContainer = document.querySelector(`.${blockId}`)
-              this.selectedTextContent = textContainer.innerHTML
-              this.editingText = true
+              this.$nextTick(() => {
+                const textContainer = document.querySelector(`.${blockId}`);
+                if (textContainer) {
+                  this.selectedTextContent = textContainer.innerHTML;
+                  this.editingText = true;
+                }
+              });
             }
 
-            // Resaltar el contenedor seleccionado
-            this.highlightBlock(this.selectedBlock)
             console.log(`Bloque con ID ${blockId} seleccionado en fila ${rowIndex}, columna ${columnIndex}`)
             return
           }
@@ -509,20 +515,6 @@ export default {
         }
       }
       return { rowIndex: null, columnIndex: null }
-    },
-
-    removeHighlightBlock () {
-      // Remover el resaltado de otros bloques
-      document.querySelectorAll('.block-wrapper').forEach(block => {
-        block.classList.remove('selected-block')
-      })
-    },
-    highlightBlock () {
-      // Remover el resaltado de otros bloques
-      this.removeHighlightBlock()
-      const blockElement = document.querySelector(`[data-block-id="${this.selectedBlock.blockId}"]`)
-      // Añadir el resaltado al bloque seleccionado
-      blockElement.classList.add('selected-block')
     },
 
   handleDeleteBlock(blockId) {
@@ -622,8 +614,6 @@ export default {
       this.selectedBlock.properties.aligment = aligment
     },
     editText (rowIndex, columnIndex) {
-      this.currentRow = rowIndex
-      this.currentColumn = columnIndex
       this.editingText = true
     },
     updateTextBlockContent (newContent) {
@@ -643,8 +633,8 @@ export default {
       console.log('Contenido después de aplicar margen:', adjustedContent);
 
       // Encuentra el bloque seleccionado en el JSON de datos
-      const selectedRow = this.rows[this.currentRow]
-      const selectedColumn = selectedRow.columns[this.currentColumn]
+      const selectedRow = this.rows[this.selectedRowIndex]
+      const selectedColumn = selectedRow.columns[this.selectedColumnIndex]
       const block = selectedColumn.content.find(block => block.blockId === this.selectedBlock.blockId)
 
       if (block && block.type === 'text') {
@@ -696,6 +686,18 @@ export default {
     updateColumnBorderColor ({ side, value }) {
       this.rows[this.selectedRowIndex].columns[this.activeColumn].border.color[side] = value
     },
+    upBlock (index) {
+      const content = this.rows[this.selectedRowIndex]?.columns[this.selectedColumnIndex].content
+      const temp = content[index];
+      content.splice(index, 1);
+      content.splice(index - 1, 0, temp);
+    },
+    downBlock (index) {
+      const content = this.rows[this.selectedRowIndex]?.columns[this.selectedColumnIndex].content
+      const temp = content[index];
+      content.splice(index, 1);
+      content.splice(index + 1, 0, temp);
+    },
 
     /// /// Drag and drops on rows /////
     handleDragStartRow (dragEvent, index) {
@@ -735,7 +737,6 @@ export default {
     },
     // Método para obtener la clase CSS correcta según el número de columnas y proporciones
     getColumnClass (numColumns, firstColumnWidth) {
-      console.log(firstColumnWidth)
       if (numColumns === 1) {
         return 'single-column'
       } else if (numColumns === 2) {
@@ -872,24 +873,7 @@ export default {
     loadTemplate () {
       this.rows = JSON.parse(this.templateToLoad)
     },
-    // Hover de las filas
-    checkRowContent (rowIndex) {
-      const rowDOM = this.$refs.editorContainer.children[rowIndex]
-      const row = this.rows[rowIndex]
-      const hasContent = row.columns.some(
-        column => column.content.trim() !== ''
-      )
-      if (hasContent) {
-        rowDOM.classList.remove('hoverable')
-        console.log('remove')
-      } else {
-        rowDOM.classList.add('hoverable')
-      }
-    },
 
-    handleRowHover (rowIndex) {
-      this.checkRowContent(rowIndex)
-    },
     generateButtonHtml (block) {
       const alignmentStyle = block.properties.alignment ? `text-align: ${block.properties.alignment};` : ''
 
@@ -1072,12 +1056,6 @@ transition: background-color 0.3s ease;
 
 .column-button:hover {
 background-color: #a9a9a9;
-}
-
-:deep(.selected-block) {
-  outline: 2px solid #007bff;
-  outline-offset: -1px;
-  box-sizing: border-box;
 }
 
 .properties-panel {

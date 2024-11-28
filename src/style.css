@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Material+Icons');
 
 
 /* Asegura que todos los elementos y pseudo-elementos usen box-sizing: border-box */
@@ -131,6 +132,7 @@ button:focus-visible {
 /* padding and border controls */
 
 .property-wrapper {
+  padding-top: 8px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgb(238, 238, 238);
 }
@@ -247,4 +249,12 @@ button:focus-visible {
 	min-width: 795px;
 	max-width: 795px;
 }
+}
+
+.v-expansion-panel-title.v-expansion-panel-title {
+  padding-left: 4px;
+}
+
+.v-expansion-panel-title--active.v-expansion-panel-title--active {
+  min-height: unset;
 }
