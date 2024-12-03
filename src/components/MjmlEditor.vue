@@ -12,7 +12,7 @@
           v-for="(row, rowIndex) in rows"
           :key="rowIndex"
           :class="['row', { 'row-selected': row.isSelected }, {'z-index-row': this.selectedRowIndex === rowIndex}, getColumnClass(row.columns.length, row.columns[0].width)]"
-          @click="selectRow(rowIndex)"
+          @click="selectRow(rowIndex, $event)"
           @dragover.prevent="handleDragOverRow(rowIndex)"
           @drop="handleDropRow(rowIndex)"
 
@@ -27,6 +27,8 @@
           >
             <span class="drag-icon">⠿</span>
           </div>
+
+          <AddRowButton v-if="rowIndex === rows.length -1 && row.isSelected" @add-row="addRow"/>
 
           <!-- Panel de acciones de la fila -->
           <div
@@ -166,6 +168,8 @@ import ButtonPropertiesPanel from './lateralPanelComponents/ButtonPropertiesPane
 import TextPropertiesPanel from './lateralPanelComponents/TextPropertiesPanel.vue'
 import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.vue'
 
+import AddRowButton from './auxiliarComponents/AddRowButton.vue'
+
 import BlockRenderer from './BlockRenderer.vue'
 
 import {generateTextButtonStructure, generateFooterStructure, generateThreeSevenStructure, generateSevenThreeStructure, generateThreeSevenWithMarginStructure, generateSevenThreeWithMarginStructure } from '../generateBlocksFunctions'
@@ -175,6 +179,7 @@ export default {
   mounted () {
     // Intercepta todos los clics en enlaces dentro del editor
     this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation)
+    this.selectRow(0)
   },
 
   beforeUnmount () {
@@ -191,7 +196,8 @@ export default {
     ToolsPanel,
     ButtonPropertiesPanel,
     TextPropertiesPanel,
-    ImagePropertiesPanel
+    ImagePropertiesPanel,
+    AddRowButton
   },
   data () {
     return {
@@ -388,6 +394,7 @@ export default {
       this.selectedRowIndex = null
       this.activeColumn = null
       this.selectedBlock = null
+      this.selectRow(0)
     },
     addRow () {
       this.rows.push({
@@ -446,8 +453,8 @@ export default {
 
       console.log(`Fila ${rowIndex} duplicada en la posición ${rowIndex + 1}.`);
     },
-    selectRow (index) {
-      const clickedElement = event.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
+    selectRow (index, event) {
+      const clickedElement = event?.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
 
       if (clickedElement) {
         // Si el clic fue en un bloque, no seleccionamos la fila
