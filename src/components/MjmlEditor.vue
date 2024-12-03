@@ -167,7 +167,6 @@ import TextPropertiesPanel from './lateralPanelComponents/TextPropertiesPanel.vu
 import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.vue'
 
 import BlockRenderer from './BlockRenderer.vue'
-import { buttonBlock } from './blocks'
 
 import {generateTextButtonStructure, generateFooterStructure, generateThreeSevenStructure, generateSevenThreeStructure, generateThreeSevenWithMarginStructure, generateSevenThreeWithMarginStructure } from '../generateBlocksFunctions'
 
