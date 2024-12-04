@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Material+Icons');
 
 
 /* Asegura que todos los elementos y pseudo-elementos usen box-sizing: border-box */
@@ -38,7 +39,7 @@ a:hover {
 }
 
 
-button {
+/* button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -55,7 +56,7 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+} */
 
 .card {
   padding: 2em;
@@ -65,7 +66,6 @@ button:focus-visible {
   max-width: 1280px;
   margin: 0 auto;
   margin-top: 24px;
-  text-align: center;
 }
 
 @media (prefers-color-scheme: light) {
@@ -103,6 +103,7 @@ button:focus-visible {
     color: #333;
     border-right: 1px solid #aaa;
     flex-shrink: 0;
+    min-width: 68px;
   }
   
   .input-container input {
@@ -127,41 +128,101 @@ button:focus-visible {
     color: #999;
   }
 
-  /* tabs columns */
 
-  .column-tabs {
+/* padding and border controls */
+
+.property-wrapper {
+  padding-top: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgb(238, 238, 238);
+}
+
+.property-title {
+  font-size: 12px;
+  font-weight: bold;
+  text-align: left;
+}
+ .padding-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .padding-control {
     display: flex;
-    margin-bottom: 0;
-    border-bottom: 1px solid #ddd;
+    flex-direction: column;
   }
   
-  .tab {
-    padding: 8px 12px;
+  .padding-control {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .padding-control label {
     font-size: 12px;
-    font-weight: bold;
-    color: #666;
+    margin-bottom: 4px;
+  }
+  
+  .control-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 32px;
+    width: fit-content;
+  }
+  
+  .padding-input {
+    width: 30px;
+    border: none;
+    text-align: center;
+    height: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    appearance: textfield;
+    -moz-appearance: textfield; /* Elimina las flechas de número en Firefox */
+  }
+  
+  .padding-input::-webkit-outer-spin-button,
+  .padding-input::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Elimina las flechas de número en Chrome */
+    margin: 0;
+  }
+  
+  .unit {
+    background-color: #f0f0f0;
+    padding: 0 8px;
+    height: 100%; /* Coincide con la altura del contenedor */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .adjust-button {
+    border: none;
+    background-color: #f9f9f9;
+    width: 24px;
+    height: 100%; /* Coincide con la altura del contenedor */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
     cursor: pointer;
-    position: relative;
-    transition: color 0.3s ease;
   }
-  
-  .tab:hover {
-    color: #333;
-  }
-  
-  .active-tab {
-    color: #333;
-  }
-  
-  .active-tab::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: #333;
-  }
+    
+    .adjust-button:hover {
+      background-color: #e0e0e0;
+    }
+    
+    /* Ocultar las flechas en los navegadores de WebKit (Chrome, Safari, etc.) */
+    .padding-input::-webkit-inner-spin-button,
+    .padding-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }  
 
 /* ckeditor */
 
@@ -188,4 +249,12 @@ button:focus-visible {
 	min-width: 795px;
 	max-width: 795px;
 }
+}
+
+.v-expansion-panel-title.v-expansion-panel-title {
+  padding-left: 4px;
+}
+
+.v-expansion-panel-title--active.v-expansion-panel-title--active {
+  min-height: unset;
 }

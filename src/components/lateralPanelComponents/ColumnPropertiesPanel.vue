@@ -1,69 +1,74 @@
 <template>
     <div class="column-properties-panel">
-      <p class="column-number">Propiedades de la columna {{ columnIndex + 1 }}</p>
-      <div class="color-picker">
-        <label class="property-title">Background Color</label>
-        <div
-          class="color-preview"
-          :style="{ backgroundColor: columnBackgroundColor }"
-          @click="triggerColorPicker('backGroundColorInput')"
-        ></div>
-        <input
-          type="color"
-          v-model="localBackgroundColor"
-          @input="updateBackgroundColor"
-          ref="backGroundColorInput"
-          style="visibility: hidden;"
-        >
+      <div class="property-wrapper">
+        <div class="color-picker">
+          <label class="property-title">Background Color</label>
+          <div
+            class="color-preview"
+            :style="{ backgroundColor: columnBackgroundColor }"
+            @click="triggerColorPicker('backGroundColorInput')"
+          ></div>
+          <input
+            type="color"
+            v-model="localBackgroundColor"
+            @input="updateBackgroundColor"
+            ref="backGroundColorInput"
+            style="visibility: hidden;"
+          >
+        </div>
       </div>
   
       <!-- Padding control -->
-      <p class="property-title">Padding</p>
-  
-      <div class="padding-controls">
-        <div class="padding-control" v-for="side in ['Top', 'Right', 'Bottom', 'Left']" :key="side">
-            <label>{{ side }}</label>
-            <div class="control-wrapper">
-                <input type="number" v-model="localPadding[side.toLowerCase()]" @input="updatePadding(side)" min="0" class="padding-input" />
-                <span class="unit">px</span>
-                <button @click="decreasePadding(side)" class="adjust-button">−</button>
-                <button @click="increasePadding(side)" class="adjust-button">+</button>
+       <div class="property-wrapper">
+          <p class="property-title">Padding</p>
+          <div class="padding-controls">
+            <div class="padding-control" v-for="side in ['Top', 'Right', 'Bottom', 'Left']" :key="side">
+                <label>{{ side }}</label>
+                <div class="control-wrapper">
+                    <input type="number" v-model="localPadding[side.toLowerCase()]" @input="updatePadding(side)" min="0" class="padding-input" />
+                    <span class="unit">px</span>
+                    <button @click="decreasePadding(side)" class="adjust-button">−</button>
+                    <button @click="increasePadding(side)" class="adjust-button">+</button>
+                </div>
             </div>
-        </div>
-      </div>
+          </div>
+       </div>
 
       <!-- Border control -->
-      <p class="property-title">Bordes</p>
-  
-      <div class="padding-controls">
-        <div class="padding-control" v-for="side in ['Top', 'Right', 'Bottom', 'Left']" :key="side">
-            <label>{{ side }}</label>
-            <div class="control-wrapper">
-                <input type="number" v-model="localBorderWidth[side.toLowerCase()]" @input="updateBorderWidth(side)" min="0" class="padding-input" />
-                <span class="unit">px</span>
-                <button @click="decreaseBorderWidth(side)" class="adjust-button">−</button>
-                <button @click="increaseBorderWidth(side)" class="adjust-button">+</button>
-            </div>
-            <div class="color-picker">
-                <div
-                class="color-preview"
-                :style="{ backgroundColor: localBorderColor[side.toLowerCase()] }"
-                @click="triggerBorderColorPicker(`borderColor-${side.toLowerCase()}`)"
-                ></div>
-                <input
-                    type="color"
-                    v-model="localBorderColor[side.toLowerCase()]" 
-                    @input="updateBorderColor(side)"
-                    :ref="`borderColor-${side.toLowerCase()}`"
-                    style="visibility: hidden;"
-                >
-            </div>
+      <div class="property-wrapper">
+        <p class="property-title">Bordes</p>
+
+        <div class="padding-controls">
+          <div class="padding-control" v-for="side in ['Top', 'Right', 'Bottom', 'Left']" :key="side">
+              <label>{{ side }}</label>
+              <div class="control-wrapper">
+                  <input type="number" v-model="localBorderWidth[side.toLowerCase()]" @input="updateBorderWidth(side)" min="0" class="padding-input" />
+                  <span class="unit">px</span>
+                  <button @click="decreaseBorderWidth(side)" class="adjust-button">−</button>
+                  <button @click="increaseBorderWidth(side)" class="adjust-button">+</button>
+              </div>
+              <div class="color-picker">
+                  <div
+                  class="color-preview"
+                  :style="{ backgroundColor: localBorderColor[side.toLowerCase()] }"
+                  @click="triggerBorderColorPicker(`borderColor-${side.toLowerCase()}`)"
+                  ></div>
+                  <input
+                      type="color"
+                      v-model="localBorderColor[side.toLowerCase()]" 
+                      @input="updateBorderColor(side)"
+                      :ref="`borderColor-${side.toLowerCase()}`"
+                      style="visibility: hidden;"
+                  >
+              </div>
+          </div>
         </div>
       </div>
     </div>
   </template>
   
   <script>
+
   export default {
     props: {
       columnBackgroundColor: {
@@ -123,18 +128,24 @@
         this.localBorderWidth[side.toLowerCase()]++;
         this.updateBorderWidth(side);
       },
-        decreaseBorderWidth(side) {
-            if (this.localBorderWidth[side.toLowerCase()] > 0) {
-            this.localBorderWidth[side.toLowerCase()]--;
-            this.updateBorderWidth(side);
-            }
-        },
-        updateBorderWidth(side) {
-            this.$emit('update-border-width', { side: side.toLowerCase(), value: this.localBorderWidth[side.toLowerCase()] });
-        },
-        updateBorderColor(side) {
-            this.$emit('update-border-color', { side: side.toLowerCase(), value: this.localBorderColor[side.toLowerCase()] });
-        }
+      decreaseBorderWidth(side) {
+          if (this.localBorderWidth[side.toLowerCase()] > 0) {
+          this.localBorderWidth[side.toLowerCase()]--;
+          this.updateBorderWidth(side);
+          }
+      },
+      updateBorderWidth(side) {
+          this.$emit('update-border-width', { side: side.toLowerCase(), value: this.localBorderWidth[side.toLowerCase()] });
+      },
+      updateBorderColor(side) {
+          this.$emit('update-border-color', { side: side.toLowerCase(), value: this.localBorderColor[side.toLowerCase()] });
+      },
+      upBlock(indx) {
+        this.$emit('up-block', indx );
+      },
+      downBlock (indx) {
+        this.$emit('down-block', indx );
+      }
     },
     watch: {
       columnBackgroundColor (newColor) {
@@ -155,21 +166,27 @@
   
   <style scoped>
   
-    .property-title {
-        font-size: 14px;
-        font-weight: bold;
-        text-align: left;
-    }
+  .column-properties-panel {
+    padding: 16px;
+    padding-top: 8px;
+  }
+
+  .property-wrapper {
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgb(238, 238, 238);
+  }
+
+  .property-title {
+      font-size: 12px;
+      font-weight: bold;
+      text-align: left;
+  }
+
   .color-picker {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-top: 8px;
-  }
-  
-  .color-picker label {
-    font-size: 14px;
-    font-weight: bold;
   }
   
   .color-preview {
@@ -198,25 +215,17 @@
   }
   
   label {
-  font-weight: bold;
-  margin-bottom: 4px;
   color: #333;
-  }
-  
-  .padding-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
   }
   
   .padding-control {
   display: flex;
   flex-direction: column;
-  align-items: center;
   }
 
   .padding-control label {
     font-size: 12px;
+    margin-bottom: 4px;
   }
   
   .control-wrapper {
@@ -225,16 +234,18 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   overflow: hidden;
-  height: 32px; /* Asegura que todos tengan la misma altura */
+  height: 32px;
+  width: fit-content;
   }
   
   .padding-input {
   width: 30px;
   border: none;
   text-align: center;
-  height: 100%; /* Coincide con la altura del contenedor */
+  height: 100%;
   padding: 0;
   box-sizing: border-box;
+  appearance: textfield;
   -moz-appearance: textfield; /* Elimina las flechas de número en Firefox */
   }
   
