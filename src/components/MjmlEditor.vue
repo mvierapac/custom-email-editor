@@ -7,88 +7,95 @@
       <button class="action-button" @click="loadTemplate">Import Json</button>
     </div>
     <div class="wrapper">
-      <div class="canvas" ref="editorContainer">
-        <div
-          v-for="(row, rowIndex) in rows"
-          :key="rowIndex"
-          :class="['row', { 'row-selected': row.isSelected }, {'z-index-row': this.selectedRowIndex === rowIndex}, getColumnClass(row.columns.length, row.columns[0].width)]"
-          @click="selectRow(rowIndex, $event)"
-          @dragover.prevent="handleDragOverRow(rowIndex)"
-          @drop="handleDropRow(rowIndex)"
-
-        >
-          <!-- Indicador de arrastre solo visible en la fila seleccionada -->
-          <div
-            v-if="row.isSelected"
-            class="drag-handle"
-            @mousedown.stop
-            @dragstart="handleDragStartRow($event, rowIndex)"
-            draggable="true"
-          >
-            <span class="drag-icon">⠿</span>
-          </div>
-
-          <AddRowButton v-if="rowIndex === rows.length -1 && row.isSelected" @add-row="addRow"/>
-
-          <!-- Panel de acciones de la fila -->
-          <div
-            v-if="row.isSelected"
-            class="row-action-panel"
-          >
-            <div class="row-action-icon delete-icon" @click="handleDeleteRow(rowIndex)">
-              🗑️
-            </div>
-            <div class="row-action-icon copy-icon" @click="handleDuplicateRow(rowIndex)">
-              📄
-            </div>
-          </div>
-          <!-- Renderización dinámica de columnas -->
-          <div class="columns-container">
-            <div
-              v-for="(column, columnIndex) in row.columns"
-              :key="columnIndex"
-              class="column"
-              :style="{
-                backgroundColor: column.backgroundColor || '#f0f0f0',
-                paddingTop: column.padding.top + 'px',
-                paddingRight: column.padding.right + 'px',
-                paddingBottom: column.padding.bottom + 'px',
-                paddingLeft: column.padding.left + 'px',
-                borderTop: `${column.border.width?.top}px solid ${column.border.color.top}`,
-                borderRight: `${column.border.width?.right}px solid ${column.border.color.right}`,
-                borderBottom: `${column.border.width?.bottom}px solid ${column.border.color.bottom}`,
-                borderLeft: `${column.border.width?.left}px solid ${column.border.color.left}`
-              }"
-              :class="{'column-outlined': !column.content.length, 'column-min-height': !column.content.length}"
-              @dragover.prevent
-              @drop="addBlockToCanvas(rowIndex, columnIndex)"
-            >
-              <div  v-if="column.content.length">
-                <BlockRenderer
-                  v-for="(block, index) in column.content"
-                  :key="block.blockId"
-                  :block="block"
-                  :isSelected ="selectedBlockId === block.blockId"
-                  :showUpBtn="index !== 0 && column.content.length > 1"
-                  :showDownBtn="index !== column.content.length-1"
-                  @block-selected="handleBlockSelection"
-                  @delete-block="handleDeleteBlock" 
-                  @duplicate-block="handleDuplicateBlock"
-                  @up-block="upBlock(index)"
-                  @down-block="downBlock(index)"
-                />
-              </div>
-            <p v-else>Columna {{ columnIndex + 1 }}</p>
-            </div>
-          </div>
-        </div>
-            <!-- Editor de texto enriquecido inline en el lienzo -->
-        <InlineEditor
-          v-if="editingText"
-          :ckeditor="editingText"
-          :initialContent="selectedTextContent"
-          @updateContent="updateTextBlockContent"
+      <div>
+        <HeaderPanel 
+        @clear-canvas="clearCanvas"
+        @undo="undo"
+        @redo="redo"
         />
+        <div class="canvas" ref="editorContainer">
+          <div
+            v-for="(row, rowIndex) in rows"
+            :key="rowIndex"
+            :class="['row', { 'row-selected': row.isSelected }, {'z-index-row': this.selectedRowIndex === rowIndex}, getColumnClass(row.columns.length, row.columns[0].width)]"
+            @click="selectRow(rowIndex, $event)"
+            @dragover.prevent="handleDragOverRow(rowIndex)"
+            @drop="handleDropRow(rowIndex)"
+
+          >
+            <!-- Indicador de arrastre solo visible en la fila seleccionada -->
+            <div
+              v-if="row.isSelected"
+              class="drag-handle"
+              @mousedown.stop
+              @dragstart="handleDragStartRow($event, rowIndex)"
+              draggable="true"
+            >
+              <span class="drag-icon">⠿</span>
+            </div>
+
+            <AddRowButton v-if="rowIndex === rows.length -1" @add-row="addRow"/>
+
+            <!-- Panel de acciones de la fila -->
+            <div
+              v-if="row.isSelected"
+              class="row-action-panel"
+            >
+              <div class="row-action-icon delete-icon" @click="handleDeleteRow(rowIndex)">
+                🗑️
+              </div>
+              <div class="row-action-icon copy-icon" @click="handleDuplicateRow(rowIndex)">
+                📄
+              </div>
+            </div>
+            <!-- Renderización dinámica de columnas -->
+            <div class="columns-container">
+              <div
+                v-for="(column, columnIndex) in row.columns"
+                :key="columnIndex"
+                class="column"
+                :style="{
+                  backgroundColor: column.backgroundColor || '#f0f0f0',
+                  paddingTop: column.padding.top + 'px',
+                  paddingRight: column.padding.right + 'px',
+                  paddingBottom: column.padding.bottom + 'px',
+                  paddingLeft: column.padding.left + 'px',
+                  borderTop: `${column.border.width?.top}px solid ${column.border.color.top}`,
+                  borderRight: `${column.border.width?.right}px solid ${column.border.color.right}`,
+                  borderBottom: `${column.border.width?.bottom}px solid ${column.border.color.bottom}`,
+                  borderLeft: `${column.border.width?.left}px solid ${column.border.color.left}`
+                }"
+                :class="{'column-outlined': !column.content.length, 'column-min-height': !column.content.length}"
+                @dragover.prevent
+                @drop="addBlockToCanvas(rowIndex, columnIndex)"
+              >
+                <div  v-if="column.content.length">
+                  <BlockRenderer
+                    v-for="(block, index) in column.content"
+                    :key="block.blockId"
+                    :block="block"
+                    :isSelected ="selectedBlockId === block.blockId"
+                    :showUpBtn="index !== 0 && column.content.length > 1"
+                    :showDownBtn="index !== column.content.length-1"
+                    @block-selected="handleBlockSelection"
+                    @delete-block="handleDeleteBlock" 
+                    @duplicate-block="handleDuplicateBlock"
+                    @up-block="upBlock(index)"
+                    @down-block="downBlock(index)"
+                  />
+                </div>
+              <p v-else>Columna {{ columnIndex + 1 }}</p>
+              </div>
+            </div>
+          </div>
+              <!-- Editor de texto enriquecido inline en el lienzo -->
+          <InlineEditor
+            v-if="editingText"
+            :ckeditor="editingText"
+            :initialContent="selectedTextContent"
+            @updateContent="updateTextBlockContent"
+          />
+        </div>
       </div>
     <div class="lateral-panel">
       <configure-columns-panel 
@@ -169,6 +176,7 @@ import TextPropertiesPanel from './lateralPanelComponents/TextPropertiesPanel.vu
 import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.vue'
 
 import AddRowButton from './auxiliarComponents/AddRowButton.vue'
+import HeaderPanel from './auxiliarComponents/HeaderPanel.vue'
 
 import BlockRenderer from './BlockRenderer.vue'
 
@@ -179,6 +187,7 @@ export default {
   mounted () {
     // Intercepta todos los clics en enlaces dentro del editor
     this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation)
+    this.saveHistory()
     this.selectRow(0)
   },
 
@@ -197,7 +206,8 @@ export default {
     ButtonPropertiesPanel,
     TextPropertiesPanel,
     ImagePropertiesPanel,
-    AddRowButton
+    AddRowButton,
+    HeaderPanel
   },
   data () {
     return {
@@ -229,6 +239,11 @@ export default {
           }]
         }
       ],
+      history: {
+        past: [],
+        present: null,
+        future: []
+      },
       templateToLoad: null,
       // CKEDITOR
       editingText: false,
@@ -372,7 +387,7 @@ export default {
 
       // Reseteamos el tipo de bloque arrastrado
       this.dragItemType = null
-
+      this.saveHistory('createBlock')
     },
     clearCanvas () {
       // Limpiamos todas las filas
@@ -409,6 +424,7 @@ export default {
           }
         }]
       })
+      this.saveHistory()
     },
     handleDeleteRow (rowIndex) {
       console.log(`Eliminar fila ${rowIndex}`)
@@ -421,6 +437,7 @@ export default {
       this.selectedRowIndex = null
       this.selectedRowColumns = 0
       this.activeColumn = null
+      this.saveHistory()
     },
     handleDuplicateRow(rowIndex) {
       console.log(`Duplicar fila ${rowIndex}`);
@@ -452,6 +469,7 @@ export default {
       this.rows.splice(rowIndex + 1, 0, clonedRow);
 
       console.log(`Fila ${rowIndex} duplicada en la posición ${rowIndex + 1}.`);
+      this.saveHistory()
     },
     selectRow (index, event) {
       const clickedElement = event?.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
@@ -548,6 +566,7 @@ export default {
     if (column) {
       column.content = column.content.filter(block => block.blockId !== blockId);
     }
+    this.saveHistory('deleteBlock')
   },
   handleDuplicateBlock(blockId) {
     const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
@@ -562,6 +581,7 @@ export default {
         column.content.splice(index + 1, 0, newBlock);
       }
     }
+    this.saveHistory('duplicateBlock')
   },
   getColumnFromBlockId(blockId) {
     for (const row of this.rows) {
@@ -578,6 +598,7 @@ export default {
       if (this.selectedBlock) {
         this.selectedBlock.properties.containerPadding[side] = value
       }
+      this.saveHistory('updateContainerPadding')
     },
 
     updateButtonText (newText) {
@@ -587,10 +608,12 @@ export default {
       } else {
         console.log('No hay bloque seleccionado.')
       }
+      this.saveHistory()
     },
     updateButtonHref (newHref) {
       if (this.selectedBlock && this.selectedBlock.type === 'button') {
         this.selectedBlock.properties.href = newHref
+        this.saveHistory()
         console.log(`Href del bloque con ID ${this.selectedBlockId} actualizado a: ${newHref}`)
       } else {
         console.log('No hay bloque seleccionado o el bloque seleccionado no es un botón.')
@@ -599,30 +622,20 @@ export default {
     // Review: cambiado por updateBlockAligment
     updateButtonAlignment (alignment) {
       if (this.selectedBlock) {
-        const blockId = this.selectedBlock.blockId
         this.selectedBlock.properties.alignment = alignment
         const blockElement = document.querySelector(`[data-block-id="${this.selectedBlock.blockId}"]`)
 
         if (blockElement) {
           blockElement.style.textAlign = `${alignment}`
+          this.saveHistory()
           console.log(`Alineación del botón actualizada a: ${alignment}`)
         }
-
-        // // Actualizar el contenido en `rows` para el elemento específico
-        // const tempContainer = document.createElement('div');
-        // tempContainer.innerHTML = this.rows[rowIndex].columns[columnIndex].content;
-
-        // const targetElement = tempContainer.querySelector(`.${blockId}`);
-        // if (targetElement) {
-        //   targetElement.style.textAlign = `-webkit-${alignment}`;
-        //   // Actualizar el contenido de la columna con el cambio aplicado
-        //   this.rows[rowIndex].columns[columnIndex].content = tempContainer.innerHTML;
-        // }
       }
     },
     updateImageHref (newHref) {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
         this.selectedBlock.properties.href = newHref
+        this.saveHistory()
         console.log(`Href del bloque con ID ${this.selectedBlockId} actualizado a: ${newHref}`)
       } else {
         console.log('No hay bloque seleccionado o el bloque seleccionado no es un img.')
@@ -631,12 +644,14 @@ export default {
     updateImageWidth (newWidth) {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
         this.selectedBlock.properties.width = newWidth
+        this.saveHistory()
         console.log(`width del bloque con ID ${this.selectedBlockId} actualizado a: ${newWidth}`)
       } else {
         console.log('No hay bloque seleccionado o el bloque seleccionado no es un img.')
       }
     },
     updateBlockAligment (aligment) {
+      this.saveHistory('updateBlickSLign')
       this.selectedBlock.properties.aligment = aligment
     },
     editText (rowIndex, columnIndex) {
@@ -666,6 +681,7 @@ export default {
       if (block && block.type === 'text') {
         // Actualiza el contenido HTML completo en `text`
         block.properties.text = adjustedContent
+        this.saveHistory('updateTextBlockContent')
         console.log(`Contenido HTML del bloque ${block.blockId} actualizado: ${adjustedContent}`)
       } else {
         console.log('No se encontró el bloque de texto para actualizar.')
@@ -698,31 +714,37 @@ export default {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
         this.columnBackgroundColor = newColor
         this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = newColor
+        this.saveHistory('updateColumnBorderColor')
       }
     },
 
     updateColumnPadding ({ side, value }) {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
         this.rows[this.selectedRowIndex].columns[this.activeColumn].padding[side] = value
+        this.saveHistory('updateColumnPadding')
       }
     },
     updateColumnBorderWidth ({ side, value }) {
       this.rows[this.selectedRowIndex].columns[this.activeColumn].border.width[side] = value
+      this.saveHistory('updateColumnBorderWidht')
     },
     updateColumnBorderColor ({ side, value }) {
       this.rows[this.selectedRowIndex].columns[this.activeColumn].border.color[side] = value
+      this.saveHistory('updateColumnBorderColor')
     },
     upBlock (index) {
       const content = this.rows[this.selectedRowIndex]?.columns[this.selectedColumnIndex].content
       const temp = content[index];
       content.splice(index, 1);
       content.splice(index - 1, 0, temp);
+      this.saveHistory('upBlock')
     },
     downBlock (index) {
       const content = this.rows[this.selectedRowIndex]?.columns[this.selectedColumnIndex].content
       const temp = content[index];
       content.splice(index, 1);
       content.splice(index + 1, 0, temp);
+      this.saveHistory('downBlock')
     },
 
     /// /// Drag and drops on rows /////
@@ -757,6 +779,7 @@ export default {
       if (this.draggedRowIndex !== null && this.draggedRowIndex !== index) {
         const draggedRow = this.rows.splice(this.draggedRowIndex, 1)[0]
         this.rows.splice(index, 0, draggedRow)
+        this.saveHistory('dropRow')
       }
       // Resetear el índice arrastrado
       this.draggedRowIndex = null
@@ -814,8 +837,57 @@ export default {
       // Actualizar las variables de estado
       this.selectedRowColumns = numColumns;
       this.activeColumn = 0;
-
+      this.saveHistory('configure columns')
       console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`);
+    },
+
+    saveHistory(method) {
+      console.log('saveHistory', method)
+      // Si hay estados futuros, los descartamos (no se pueden "rehacer" tras un nuevo cambio)
+      this.history.future = [];
+      
+      // Guarda el estado actual en el pasado
+      if (this.history.present !== null) {
+        this.history.past.push(JSON.parse(JSON.stringify(this.history.present)));
+      }
+
+      // Limita el historial a 20 versiones
+      if (this.history.past.length > 20) {
+        this.history.past.shift();
+      }
+
+      // Actualiza el estado presente
+      this.history.present = JSON.parse(JSON.stringify(this.rows));
+    },
+    undo() {
+      if (this.history.past.length > 0) {
+        // Mover el estado actual al futuro
+        this.history.future.unshift(JSON.parse(JSON.stringify(this.history.present)));
+
+        // Recuperar el último estado del pasado
+        this.history.present = this.history.past.pop();
+
+        // Restaurar el estado de rows
+        this.rows = JSON.parse(JSON.stringify(this.history.present));
+
+        this.selectedBlock = null
+        this.selectedBlockId = null
+      }
+    },
+    redo() {
+      if (this.history.future.length > 0) {
+        // Mover el estado actual al pasado
+        this.history.past.push(JSON.parse(JSON.stringify(this.history.present)));
+
+        // Recuperar el primer estado del futuro
+        this.history.present = this.history.future.shift();
+
+        // Restaurar el estado de rows
+        this.rows = JSON.parse(JSON.stringify(this.history.present));
+
+        this.selectedBlock = null
+        this.selectedBlockId = null
+      }
     },
 
     /// test generate mjml
