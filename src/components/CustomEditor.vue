@@ -1,12 +1,5 @@
 <template>
   <div>
-    <!-- <ActionsButtonPanel
-      :disableSave="disableSave"
-      @exit="exit"
-      @save="saveAndEmitContent"
-      @saveAndExit="saveAndEmitContent(true)"
-    /> -->
-
 
     <div class="wrapper">
       <div>
@@ -303,12 +296,6 @@ export default {
     EditTextDialog,
     PreviewContent,
   },
-  props: {
-    disableSave: {
-      type: Boolean,
-      default: false
-    }
-  },
 
   data () {
     return {
@@ -385,7 +372,6 @@ export default {
       if (target && target.closest('.block-wrapper')) {
       // Si el enlace está dentro del editor (e.g., en un .block-wrapper), prevenimos la redirección
         event.preventDefault()
-        console.log('Redirección prevenida en el editor.')
       }
     },
 
@@ -508,7 +494,6 @@ export default {
       this.saveHistory()
     },
     handleDeleteRow (rowIndex) {
-      console.log(`Eliminar fila ${rowIndex}`)
       if (this.rows.length == 1) {
         return
       }
@@ -521,8 +506,6 @@ export default {
       this.saveHistory()
     },
     handleDuplicateRow(rowIndex) {
-      console.log(`Duplicar fila ${rowIndex}`);
-
       // Clonar la fila original
       const originalRow = this.rows[rowIndex];
       const clonedRow = JSON.parse(JSON.stringify(originalRow));
@@ -548,8 +531,6 @@ export default {
 
       // Insertar la fila clonada justo después de la fila original
       this.rows.splice(rowIndex + 1, 0, clonedRow);
-
-      console.log(`Fila ${rowIndex} duplicada en la posición ${rowIndex + 1}.`);
       this.saveHistory()
     },
     selectRow (index, event) {
@@ -574,7 +555,6 @@ export default {
       this.selectedRowIndex = index
       this.selectedRowColumns = this.rows[index].columns.length
       this.selectColumn(0)
-      console.log(`Fila ${index + 1} seleccionada con ${this.selectedRowColumns} columna(s)`)
     },
     upRow (index) {
       if (index > 0) {
@@ -595,7 +575,6 @@ export default {
     selectColumn (index) {
       this.activeColumn = index
       this.columnBackgroundColor = this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor
-      console.log(`Columna ${index + 1} seleccionada`)
     },
     handleBlockSelection (blockId) {
       // Iterar sobre filas y columnas para encontrar el bloque con el blockId
@@ -625,7 +604,6 @@ export default {
               this.buttonText = this.selectedBlock.properties.text // Asigna el texto del botón
               this.buttonLink = this.selectedBlock.properties.href // Asigna el href del botón
             }
-            console.log(`Bloque con ID ${blockId} seleccionado en fila ${rowIndex}, columna ${columnIndex}`)
             return
           }
         }
@@ -705,23 +683,18 @@ export default {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
         this.selectedBlock.properties.href = newHref
         this.saveHistory()
-        console.log(`Href del bloque con ID ${this.selectedBlockId} actualizado a: ${newHref}`)
       } else {
-        console.log('No hay bloque seleccionado o el bloque seleccionado no es un img.')
       }
     },
     updateImageWidth (newWidth) {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
         this.selectedBlock.properties.width = newWidth
         this.saveHistory()
-        console.log(`width del bloque con ID ${this.selectedBlockId} actualizado a: ${newWidth}`)
       } else {
-        console.log('No hay bloque seleccionado o el bloque seleccionado no es un img.')
       }
     },
     updateImageSrc (newSrc) {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
-        console.log(this.selectedBlock.properties)
         this.selectedBlock.properties.src = newSrc
         this.saveHistory()
       }    
@@ -740,7 +713,6 @@ export default {
     },
     updateTextBlockContent () {
       let newContent = this.modalEditText.newText
-      console.log('newContent:', newContent)
 
       // Ajusta el contenido de <p> para que todos tengan margin: 0
       const adjustedContent = newContent.replace(/<p(\s+[^>]*)?>/g, (match, attrs) => {
@@ -756,8 +728,6 @@ export default {
             return `<p style="margin: 0; text-align: left;"${attrs || ''}>`;
         }
       });
-
-      console.log('Contenido después de aplicar margen:', adjustedContent);
 
       // Ajustar imágenes dentro de <figure>
         const adjustedWithFigureStyles = adjustedContent.replace(/<figure([^>]*)style="([^"]*)"[^>]*>\s*<img([^>]*)style="([^"]*)"/g, (match, figureAttrs, figureStyle, imgAttrs, imgStyle) => {
@@ -806,9 +776,6 @@ export default {
 
       return `<img${attrsBeforeStyle}style="${updatedStyle}"${attrsWithoutHeight}>`;
     });
-
-
-      console.log('Contenido después de ajustar imágenes:', adjustedWithImageStyles);
 
       if (this.selectedBlock) {
         this.selectedBlock.properties.text = adjustedWithImageStyles
@@ -901,7 +868,6 @@ export default {
     // Método para configurar el número de columnas y sus proporciones
     configureColumns(numColumns, proportions = []) {
       if (this.selectedRowIndex === null) {
-        console.log('Por favor, selecciona una fila primero.');
         return;
       }
 
@@ -932,11 +898,9 @@ export default {
       this.selectedRowColumns = numColumns;
       this.activeColumn = 0;
       this.saveHistory('configure columns')
-      console.log(`Fila ${this.selectedRowIndex + 1} configurada con ${numColumns} columnas.`);
     },
 
     saveHistory(method) {
-      console.log('saveHistory', method)
       // Si hay estados futuros, los descartamos (no se pueden "rehacer" tras un nuevo cambio)
       this.history.future = [];
       
@@ -1007,18 +971,10 @@ export default {
       return columnWidthWithoutPadding;
     },
 
-    saveAndEmitContent (exit = false) {
-      const html = this.exportMJMLToHTML()
-      const json = this.exportJson()
-      this.$emit('save-content', {html: html, json: json}, exit)
-    },
-
     exportMJMLToHTML () {
       const mjmlContent = this.generateMJML();
-      console.log(mjmlContent)
       const { html } = mjml2html(mjmlContent, { beautify: true, minify: false });
       const processedHTML = this.postProcessHTML(html);
-      // console.log(processedHTML)
       return processedHTML;
     },
     generateMJML() {
@@ -1242,9 +1198,6 @@ export default {
       this.htmlForPreview = ''
       this.showPreviewContent = false
     },
-    exit () {
-      this.$emit('exit')
-    }
   }
 }
 </script>
