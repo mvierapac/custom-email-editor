@@ -21,16 +21,16 @@ Here are some examples of how the editor works:
 
 ### 1. Main Interface
 The main layout of the editor.
-![Main Interface](assets/screenshots/globalView.png)
+![Main Interface](src/assets/screenshots/globalView.png)
 
 ### 2. Drag-and-Drop Functionality
 Add predefined rows to the canvas.
-![Drag and Drop](assets/gifs/addingContent.gif)
+![Drag and Drop](src/assets/gifs/addingContent.gif)
 
 ### 3. Customize blocks
 Change each block easily.
-![Button editing](assets/gifs/gifButton.gif)
+![Button editing](src/assets/gifs/gifButton.gif)
 
 ### 4. See How the Email Looks
 Preview how the email will appear on desktop and mobile devices
-![Preview](assets/gifs/previewGif.gif)
+![Preview](src/assets/gifs/previewGif.gif)
