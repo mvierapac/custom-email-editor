@@ -1,39 +1,47 @@
 <template>
     <div>
       <button class="collapsable-panel-button" @click="handleExpandBtn">
-        <p>{{ $t('EDITOR.BLOCKS.ELEMENTS') }}</p>
+        <p>Filas prediseñadas</p>
         <i class="mdi mdi-chevron-up" v-if="expanded"></i>
         <i class="mdi mdi-chevron-down" v-else></i>
       </button>
       <div class="tool-panel lateral-panel-section-padding" v-if="expanded">
+        <div>
           <div class="tool-panel__group">
             <div 
               class="draggable-tool" 
               draggable="true" 
-              @dragstart="startDrag('text', '#1973b8')"
+              @dragstart="startDrag('threeSeven')"
             >
-              <img src="_editor/images/text.png" class="filter-invert" :style="{'max-width': '80%'}" alt="image">
-              <p>{{ $t('EDITOR.BLOCKS.TEXT') }}</p>
+              <img src="_editor/images/three-seven.png" class="filter-invert" alt="3/7">
+              <p>3/7</p>
             </div>
-            <div
+            <div 
               class="draggable-tool" 
               draggable="true" 
-              @dragstart="startDrag('image')"
+              @dragstart="startDrag('sevenThree')"
             >
-              <img src="_editor/images/image_placeholder.png" class="filter-invert fit-content" alt="image">
-              <p>{{ $t('EDITOR.BLOCKS.IMAGE') }}</p>
+              <img src="_editor/images/seven-three.png" class="filter-invert" alt="7/3">
+              <p>7/3</p>
             </div>
+            <div 
+              class="draggable-tool" 
+              draggable="true" 
+              @dragstart="startDrag('two-column')"
+            >
+            <img src="_editor/images/two_column.png" class="filter-invert fit-content" :style="{'max-width': '70%'}" alt="two column">
+              <p>2 columnas</p>
+            </div>
+            <div 
+              class="draggable-tool" 
+              draggable="true" 
+              @dragstart="startDrag('three-column')"
+            >
+            <img src="_editor/images/three_column.png" class="filter-invert fit-content" :style="{'max-width': '80%'}" alt="three column">
+              <p>3 columnas</p>
+            </div>            
           </div>
-          <div class="tool-panel__group">
-            <div 
-              class="draggable-tool" 
-              draggable="true" 
-              @dragstart="startDrag('button', '#1973b8')"
-            >
-              <img src="_editor/images/button.png" alt="btn-blu">
-              <p>{{ $t('EDITOR.BLOCKS.BTN_BLUE') }}</p>
-            </div>
-          </div>    
+        </div>  
       </div>
     </div>
   </template>
@@ -70,24 +78,6 @@
           gap: 8px;
           flex-wrap: wrap;
         }
-    }
-    .collapsable-panel-button {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      padding: 12px;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      font-weight: 600;
-      border-bottom: 1px solid #ddd;
-      transition: background-color 0.3s ease;
-    }
-    .collapsable-panel-button i {
-      font-size: 18px;
-    }
-    .collapsable-panel-button:hover {
-      background-color: rgb(244, 244, 244);
     }
     .draggable-item {
         padding: 10px;
@@ -137,18 +127,31 @@
         border: 1px solid rgb(238, 238, 238);
     }
 
-    .empty-tool {
-      flex: 1 1 0%;
-      min-width: 100px;
-      max-width: 100px;
-    }
-
     .filter-invert {
       filter: invert(1) brightness(0.5);
     }
 
     .fit-content {
       max-width: fit-content;
+    }
+
+    .collapsable-panel-button {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 1px solid #ddd;
+      transition: background-color 0.3s ease;
+    }
+    .collapsable-panel-button i {
+      font-size: 18px;
+    }
+    .collapsable-panel-button:hover {
+      background-color: rgb(244, 244, 244);
     }
   </style>
   

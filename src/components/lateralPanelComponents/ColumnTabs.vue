@@ -1,4 +1,6 @@
 <template>
+  <div class="lateral-panel-section-padding">
+    <p class="properties-title">Propiedades de la columna</p>
     <div class="column-tabs-container">
       <div class="column-tabs">
         <div
@@ -7,7 +9,7 @@
           :class="['tab', { 'active-tab': activeColumn === col - 1 }]"
           @click="selectTab(col - 1)"
         >
-          Column {{ col }}
+        {{ $t('EDITOR.COLUMN') }} {{ col }}
         </div>
       </div>
       
@@ -15,21 +17,20 @@
         <!-- Botón para eliminar columnas -->
         <button 
             v-if="columnsCount > 1" 
-            class="add-column-button" 
+            class="add-column-button mdi mdi-minus" 
             @click="removeColumn"
         >
-            -
         </button>        
         <!-- Botón para agregar columnas -->
         <button 
             v-if="columnsCount < 4" 
-            class="add-column-button" 
+            class="add-column-button mdi mdi-plus" 
             @click="addColumn"
         >
-            +
         </button>
       </div>
     </div>
+  </div>
   </template>
   
   <script>
@@ -66,6 +67,11 @@
     align-items: center;
     gap: 8px;
 }
+
+.properties-title {
+  padding: 4px 0;
+}
+
   .column-tabs {
     display: flex;
     margin-bottom: 0;

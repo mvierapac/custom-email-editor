@@ -1,0 +1,162 @@
+// font-family
+.text_medium {
+  font-family: 'BentonSansBBVA';
+}
+
+.text_book {
+  font-family: 'BentonSansBBVABook';
+}
+
+.text_bold {
+  font-family: 'BentonSansBBVABold';
+}
+
+.text_light {
+  font-family: 'BentonSansBBVALight';
+}
+
+[class^="text_"], [class*=" text_"] {
+  // text size
+  &.ts {
+    &-xxxl {
+      font-size: 2rem;
+    }
+  
+    &-xxl {
+      font-size: 1.5rem;
+    }
+  
+    &-xl {
+      font-size: 1.125rem;
+    }
+  
+    &-l {
+      font-size: 1rem;
+    }
+  
+    &-m {
+      font-size: .875rem;
+    }
+  
+    &-s {
+      font-size: .8125rem;
+    }
+  
+    &-xs {
+      font-size: .75rem;
+    }
+  
+    &-xxs {
+      font-size: .6875rem;
+    }
+  
+    &-xxxs {
+      font-size: .625rem;
+    }
+  
+    &-20 {
+      font-size: 1.25rem;
+    }
+  }
+
+  // text align
+  &.ta {
+    &-c {
+      text-align: center;
+    }
+  }
+
+  // line height
+  &.lh {
+    &-20 {
+      line-height: 1.25rem;
+    }
+  
+    &-24 {
+      line-height: 1.5rem;
+    }
+
+    &-32 {
+      line-height: 2rem;
+    }
+  }
+
+  // text color
+  &.tc {
+    &-navy {
+      color: #072146;
+    }
+  
+    &-core-blue {
+      color: #004481;
+    }
+  
+    &-core-dark-blue {
+      color: #043263;
+    }
+  
+    &-core-light-blue {
+      color: #1464A5
+    }
+  
+    &-medium-blue {
+      color: #1973B8;
+    }
+  
+    &-medium-light-blue {
+      color: #49A5E6;
+    }
+  
+    &-sky-blue {
+      color: #5BBEFF;
+    }
+  
+    &-sky-light-blue {
+      color: #D4EDFC;
+    }
+  
+    &-aqua {
+      color: #2DCCCD;
+    }
+  
+    &-aqua-dark {
+      color: #028484;
+    }
+  
+    &-aqua-medium {
+      color: #02A5A5;
+    }
+  
+    &-aqua-light {
+      color: #5AC4C4;
+    }
+  
+    &-aqua-white {
+      color: #EAF9FA;
+    }
+
+    &-600 {
+      color: #121212;
+    }
+
+    &-500 {
+      color: #666666;
+    }
+
+    &-400 {
+      color: #BDBDBD;
+    }
+
+    &-300 {
+      color: #D3D3D3;
+    }
+
+    &-200 {
+      color: #E9E9E9;
+    }
+
+    &-100 {
+      color: #F4F4F4;
+    }
+  }
+}

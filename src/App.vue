@@ -1,5 +1,5 @@
 <script setup>
-import Editor from './components/MjmlEditor.vue';
+import Editor from './components/CustomEditor.vue';
  import { ref } from 'vue'
 
 

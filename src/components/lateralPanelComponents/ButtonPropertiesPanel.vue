@@ -1,7 +1,8 @@
 <template>
-    <div class="properties-panel">
+    <div class="properties-panel lateral-panel-section-padding sticky-panel">
+      <p class="properties-title">{{ $t('EDITOR.BUTTON_PROPERTIES') }}</p>
       <div class="input-container">
-        <label for="url-input">URL</label>
+        <label for="url-input">{{ $t('EDITOR.URL') }}</label>
         <input
           type="text"
           id="url-input"
@@ -10,7 +11,7 @@
           placeholder="https://example.com">
       </div>
       <div class="input-container">
-        <label for="button-text">Texto</label>
+        <label for="button-text">{{ $t('EDITOR.TEXT') }}</label>
         <input
           type="text"
           id="button-text"
@@ -18,15 +19,35 @@
           @blur="updateText"
           placeholder="Texto">
       </div>
-      <div class="align-buttons">
-        <button class="align-button" @click="updateAlignment('left')">Izda</button>
-        <button class="align-button" @click="updateAlignment('center')">Centro</button>
-        <button class="align-button" @click="updateAlignment('right')">Drcha</button>
+      <div class="property-wrapper">
+        <p class="property-title">{{ $t('EDITOR.ALIGNMENT') }}</p>
+        <div class="align-buttons">
+          <button
+           class="align-button" 
+           :class="{ 'align-button--selected': isSelectedAlignment('left') }" 
+           @click="updateAlignment('left')"
+          >
+            <v-icon>mdi-format-align-left</v-icon>
+          </button>
+          <button 
+            class="align-button" 
+            :class="{ 'align-button--selected': isSelectedAlignment('center') }" 
+            @click="updateAlignment('center')"
+          >
+            <v-icon>mdi-format-align-center</v-icon>
+          </button>
+          <button 
+            class="align-button" 
+            :class="{ 'align-button--selected': isSelectedAlignment('right') }" 
+            @click="updateAlignment('right')"
+          >
+            <v-icon>mdi-format-align-right</v-icon>
+          </button>
+        </div>
       </div>
-
       <!-- Padding control -->
       <div class="property-wrapper">
-          <p class="property-title">Padding del contenedor</p>
+          <p class="property-title">{{ $t('EDITOR.CONTAINER_PADDING') }}</p>
           <div class="padding-controls">
             <div class="padding-control" v-for="side in ['Top', 'Right', 'Bottom', 'Left']" :key="side">
                 <label>{{ side }}</label>
@@ -56,7 +77,11 @@
       containerPadding: {
         type: Object,
         required: true
-      }
+      },
+      alignment: {
+        type: String,
+        required: true
+      },
     },
     data() {
       return {
@@ -66,6 +91,9 @@
       };
     },
     methods: {
+      isSelectedAlignment (align) {
+        return this.alignment === align
+      },
       updateHref() {
         this.$emit('update-button-href', this.localButtonLink);
       },
@@ -104,27 +132,36 @@
   };
   </script>
   
-  <style scoped>
-  .properties-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  <style scoped lang="scss">
+  .properties-title {
+    padding: 12px 4px;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
   }
   .align-buttons {
-  margin-top: 16px;
-  display: flex;
-  gap: 12px;
-}
+    margin-top: 8px;
+    display: flex;
+    gap: 4px;
+  }
 
 .align-button {
-  background-color: #e4c77be7;
-  border-radius: 8px;
-  border: 1px solid transparent;
+  background-color: #ffff;
+  border: 1px solid #D3D3D3;
+  border-radius: 2px;
   padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
   cursor: pointer;
+
+  &:hover {
+    background-color: #D3D3D3;
+  }
+
+  &--selected {
+    background-color: #D3D3D3;
+  }
 }
+
   </style>
   

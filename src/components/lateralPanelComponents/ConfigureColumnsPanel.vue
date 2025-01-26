@@ -1,102 +1,105 @@
 <template>
-    <div class="configure-columns-panel">
+    <div>
+        <button class="collapsable-panel-button" @click="handleExpandBtn">
+            <p>Estructura de la fila</p>
+            <i class="mdi mdi-chevron-up" v-if="expanded"></i>
+            <i class="mdi mdi-chevron-down" v-else></i>
+        </button>
+        <section class="lateral-panel-section-padding" v-if="expanded">
+            <div class="configure-columns-panel">
 
-   <!--  Review: Borrar       
-        <button class="column-button" @click="emitConfigureColumns(1)"> 100% </button>
-        <button class="column-button" @click="emitConfigureColumns(2)"> 2*50% </button>
-        <button class="column-button" @click="emitConfigureColumns(2, [67, 33])"> 67 / 33 </button>
-        <button class="column-button" @click="emitConfigureColumns(2, [33, 67])"> 33 / 67 </button>
-        <button class="column-button" @click="emitConfigureColumns(3)"> 33*3 </button>
-        <button class="column-button" @click="emitConfigureColumns(4)"> 25*4 </button> 
-      -->
-        
+                <!-- boton 100% -->
+                <div style="width: calc(50% - 8px);">
+                    <div class="set-columns-tool set-columns-tool-selected">
+                        <button class="set-columns-buttons" style="flex: 0 0 100%;" @click="emitConfigureColumns(1)">
+                            <div class="set-columns-content">100%</div>
+                        </button>
+                    </div>
+                </div>         
+                <!-- boton 50/50 -->
+                <div style="width: calc(50% - 8px);">
+                    <div class="set-columns-tool set-columns-tool-selected">
+                        <button class="set-columns-buttons" style="flex: 0 0 50%;" @click="emitConfigureColumns(2)">
+                            <div class="set-columns-content">50%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 50%;" @click="emitConfigureColumns(2)">
+                            <div class="set-columns-content">50%</div>
+                        </button>
+                    </div>
+                </div>
 
-        <!-- boton 100% -->
-        <div style="width: calc(50% - 8px);">
-            <div class="set-columns-tool set-columns-tool-selected">
-                <button class="set-columns-buttons" style="flex: 0 0 100%;" @click="emitConfigureColumns(1)">
-                    <div class="set-columns-content">100%</div>
-                </button>
-            </div>
-        </div>         
-        <!-- boton 50/50 -->
-        <div style="width: calc(50% - 8px);">
-            <div class="set-columns-tool set-columns-tool-selected">
-                <button class="set-columns-buttons" style="flex: 0 0 50%;" @click="emitConfigureColumns(2)">
-                    <div class="set-columns-content">50%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 50%;" @click="emitConfigureColumns(2)">
-                    <div class="set-columns-content">50%</div>
-                </button>
-            </div>
-        </div>
+                <!-- boton 33/67 -->
+                <div style="width: calc(50% - 8px);">
+                    <div class="set-columns-tool set-columns-tool-selected">
+                        <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(2, [33, 67])">
+                            <div class="set-columns-content">33%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 67%;" @click="emitConfigureColumns(2, [33, 67])">
+                            <div class="set-columns-content">67%</div>
+                        </button>
+                    </div>
+                </div>
 
-        <!-- boton 33/67 -->
-        <div style="width: calc(50% - 8px);">
-            <div class="set-columns-tool set-columns-tool-selected">
-                <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(2, [33, 67])">
-                    <div class="set-columns-content">33%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 67%;" @click="emitConfigureColumns(2, [33, 67])">
-                    <div class="set-columns-content">67%</div>
-                </button>
-            </div>
-        </div>
+                <!-- boton 67/33 -->
+                <div style="width: calc(50% - 8px);">
+                    <div class="set-columns-tool set-columns-tool-selected">
+                        <button class="set-columns-buttons" style="flex: 0 0 67%;" @click="emitConfigureColumns(2, [67, 33])">
+                            <div class="set-columns-content">67%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(2, [67, 33])">
+                            <div class="set-columns-content">33%</div>
+                        </button>
+                    </div>
+                </div>
 
-        <!-- boton 67/33 -->
-        <div style="width: calc(50% - 8px);">
-            <div class="set-columns-tool set-columns-tool-selected">
-                <button class="set-columns-buttons" style="flex: 0 0 67%;" @click="emitConfigureColumns(2, [67, 33])">
-                    <div class="set-columns-content">67%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(2, [67, 33])">
-                    <div class="set-columns-content">33%</div>
-                </button>
-            </div>
-        </div>
-        
-        <!-- boton 33/33/33 -->
-        <div style="width: calc(50% - 8px);">
-            <div class="set-columns-tool set-columns-tool-selected">
-                <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(3)">
-                    <div class="set-columns-content">33%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(3)">
-                    <div class="set-columns-content">33%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(3)">
-                    <div class="set-columns-content">33%</div>
-                </button>
-            </div>
-        </div>
+                <!-- boton 33/33/33 -->
+                <div style="width: calc(50% - 8px);">
+                    <div class="set-columns-tool set-columns-tool-selected">
+                        <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(3)">
+                            <div class="set-columns-content">33%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(3)">
+                            <div class="set-columns-content">33%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 33%;" @click="emitConfigureColumns(3)">
+                            <div class="set-columns-content">33%</div>
+                        </button>
+                    </div>
+                </div>
 
-        <!-- boton 25/25/25/25 -->
-        <div style="width: calc(50% - 8px);">
-            <div class="set-columns-tool set-columns-tool-selected">
-                <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
-                    <div class="set-columns-content">25%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
-                    <div class="set-columns-content">25%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
-                    <div class="set-columns-content">25%</div>
-                </button>
-                <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
-                    <div class="set-columns-content">25%</div>
-                </button>
+                <!-- boton 25/25/25/25 -->
+                <div style="width: calc(50% - 8px);">
+                    <div class="set-columns-tool set-columns-tool-selected">
+                        <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
+                            <div class="set-columns-content">25%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
+                            <div class="set-columns-content">25%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
+                            <div class="set-columns-content">25%</div>
+                        </button>
+                        <button class="set-columns-buttons" style="flex: 0 0 25%;" @click="emitConfigureColumns(4)">
+                            <div class="set-columns-content">25%</div>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </div>    
   </template>
   
   <script>
   export default {
     data () {
       return {
+        expanded: true
       }
     },
     methods: {
+      handleExpandBtn () {
+        this.expanded = !this.expanded
+      },
       emitConfigureColumns (numColumns, proportions = []) {
         this.$emit('configure-columns', numColumns, proportions)
       }
@@ -105,12 +108,14 @@
   </script>
   
   <style scoped>
+
   .configure-columns-panel {
     display:  flex;
     gap: 8px;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-start;
+    margin-bottom: 8px;
   }
   
   .column-button {
@@ -171,6 +176,29 @@
     text-align: center;
     font-size: 12px;
     color: rgb(81, 81, 81);
+}
+
+.lateral-panel-section-padding {
+    margin-top: 12px;
+}
+
+.collapsable-panel-button {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 1px solid #ddd;
+      transition: background-color 0.3s ease;
+}
+.collapsable-panel-button i {
+    font-size: 18px;
+}
+.collapsable-panel-button:hover {
+    background-color: rgb(244, 244, 244);
 }
 
   </style>

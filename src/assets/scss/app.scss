@@ -1,0 +1,83 @@
+/* global styles */
+@import "_variables.scss"; 
+@import "_button.scss"; 
+@import "_utilities.scss";
+@import "_text.scss";
+@import "_mixins.scss";
+@import "_customEditor";
+
+body {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: normal;
+  line-height: 1.6rem;
+  color: #4c4c4c;
+  font-family: 'BentonSansBBVABook', sans-serif;
+  min-width: 320px;
+}
+
+
+// .gjs-rte-toolbar {
+//   top: -112px !important;
+//   z-index: 9999 !important;
+// }
+
+p {
+  margin: 0;
+}
+.bg-app {
+  background-color: #F4F4F4;
+}
+
+.row {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.max-width-app {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.v-application {
+  font-family: $book;
+}
+
+.cke_notification_warning {
+  display: none; 
+}
+
+.line {
+  border-top: 1px solid #979797;
+
+  &--blue {
+    border-top: 1px solid $bbva-aqua-light;
+  }
+}
+
+a {
+  color: #337ab7;
+  text-decoration: none;
+
+  &:hover {
+    color: #2dcccd;
+  }
+}
+
+.common-modal{
+  background-color: #FFFFFF;
+  padding: 32px 40px 32px 40px;
+  border-radius: 0px !important;
+  width: 920px !important;
+  @include at-least-1280{
+      width: 752px !important;
+  }
+}
+
+.big-modal{
+  background-color: #FFFFFF;
+  padding: 32px 40px 32px 40px;
+  border-radius: 0px !important;
+  width: 80% !important;
+}

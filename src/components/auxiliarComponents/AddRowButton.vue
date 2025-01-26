@@ -1,8 +1,10 @@
 <template>
-    <button class="add-row-button" @click.stop="emitAddRow">
-      <!-- review change for bbva-icon -->
-      +
-    </button>
+        <v-tooltip content-class="tooltip" location="bottom">
+          <template v-slot:activator="{ props }">
+            <button class="add-row-button mdi mdi-plus" v-bind="props" @click.stop="emitAddRow"></button>  
+          </template>
+          <span>{{ $t('EDITOR.ADD_ROW') }}</span>
+      </v-tooltip> 
   </template>
   
   <script>
@@ -27,11 +29,12 @@
       justify-content: center;
       left: calc(50% - 50px);
       bottom: -20px;
-      z-index: 100;
+      z-index: 1;
       width: 100px;
       height: 20px;
       background-color: #1464A5;
       color: #fff;
+      font-size: 20px;
       cursor: pointer;
     }
   </style>

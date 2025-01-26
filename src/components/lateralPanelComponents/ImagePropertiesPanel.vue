@@ -1,17 +1,17 @@
 <template>
-    <div class="properties-panel">
-
+    <div class="properties-panel lateral-panel-section-padding sticky-panel">
+      <p class="properties-title">{{ $t('EDITOR.IMAGE_PROPERTIES') }}</p>
       <!-- input type file -->
        <div :style="{'margin-bottom':'12px'}">
         <label for="attachImg">
-          <span class="upload-img-button">Subir imagen</span>
+          <span class="upload-img-button">{{ $t('EDITOR.UPLOAD_IMAGE') }}</span>
         </label>
-        <input type="file" value="" @change="uploadImg()"
+        <input type="file" ref="fileInput" value="" @change="uploadImg()"
           id="attachImg" name="attachImg"
         >
        </div>
       <div class="input-container">
-        <label for="url-input">URL</label>
+        <label for="url-input">{{ $t('EDITOR.URL') }}</label>
         <input
           type="text"
           id="url-input"
@@ -22,7 +22,7 @@
 
           <!-- Control  para el ancho de la imagen -->
       <div class="property-wrapper">
-        <p class="property-title">Ancho de la imagen</p>
+        <p class="property-title">{{ $t('EDITOR.IMAGE_WIDTH') }}</p>
         <div class="input-range-wrapper">
           <input
             type="range"
@@ -36,19 +36,36 @@
         </div>
       </div>
       
-      <!-- Review Botones de alineación con iconos correspondientes -->
       <!-- Alineación de la imagen -->
       <div class="property-wrapper">
-        <p class="property-title">Alineación</p>
+        <p class="property-title">{{ $t('EDITOR.ALIGNMENT') }}</p>
         <div class="align-buttons">
-          <button class="align-button" @click="updateAlignment('left')">Izda</button>
-          <button class="align-button" @click="updateAlignment('center')">Centro</button>
-          <button class="align-button" @click="updateAlignment('right')">Drcha</button>
+          <button
+           class="align-button" 
+           :class="{ 'align-button--selected': isSelectedAlignment('left') }" 
+           @click="updateAlignment('left')"
+          >
+            <v-icon>mdi-format-align-left</v-icon>
+          </button>
+          <button 
+            class="align-button" 
+            :class="{ 'align-button--selected': isSelectedAlignment('center') }" 
+            @click="updateAlignment('center')"
+          >
+            <v-icon>mdi-format-align-center</v-icon>
+          </button>
+          <button 
+            class="align-button" 
+            :class="{ 'align-button--selected': isSelectedAlignment('right') }" 
+            @click="updateAlignment('right')"
+          >
+            <v-icon>mdi-format-align-right</v-icon>
+          </button>
         </div>
       </div> 
       <!-- Padding control -->
       <div class="property-wrapper">
-          <p class="property-title">Padding del contenedor</p>
+          <p class="property-title">{{ $t('EDITOR.CONTAINER_PADDING') }}</p>
           <div class="padding-controls">
             <div class="padding-control" v-for="side in ['Top', 'Right', 'Bottom', 'Left']" :key="side">
                 <label>{{ side }}</label>
@@ -65,6 +82,7 @@
   </template>
   
   <script>
+
   export default {
     props: {
       imageLink: {
@@ -78,7 +96,11 @@
       containerPadding: {
         type: Object,
         required: true
-      }
+      },
+      alignment: {
+        type: String,
+        required: true
+      },
     },
     data() {
       return {
@@ -89,6 +111,12 @@
       };
     },
     methods: {
+      isSelectedAlignment (align) {
+        return this.alignment === align
+      },
+      updateSrc (src) {
+        this.$emit('update-img-src', src);
+      },
       updateHref() {
         this.$emit('update-img-href', this.localImageLink);
       },
@@ -113,15 +141,9 @@
         this.$emit('update-container-padding', { side: side.toLowerCase(), value: this.localContainerPadding[side.toLowerCase()] });
       },
 
-      // Review: Implementar back y limitar tipos de archivos
-      uploadImg () {
-        // get file selected by user
-        const file = document.getElementById('attachImg').files[0]
-        const type = file.type
-        this.attachImgs = file
-        console.log(this.attachImgs)
-        const input = document.getElementById('attachImg')
-        input.value = null
+      triggerFileInput() {
+        // Método para activar el input desde el padre
+        this.$refs.fileInput.click();
       },
     },
     watch: {
@@ -138,13 +160,7 @@
   };
   </script>
   
-  <style scoped>
-  .properties-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
+  <style scoped lang='scss'>
   input[type="file"] {
     display: none;
  }
@@ -170,5 +186,28 @@
   gap: 8px;
 }
 
+.align-buttons {
+    margin-top: 8px;
+    display: flex;
+    gap: 4px;
+  }
+
+.align-button {
+  background-color: #ffff;
+  border: 1px solid #D3D3D3;
+  border-radius: 2px;
+  padding: 0.6em 1.2em;
+  font-size: 12px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #D3D3D3;
+  }
+
+  &--selected {
+    background-color: #D3D3D3;
+  }
+}
   </style>
   

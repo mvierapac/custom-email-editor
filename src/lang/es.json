@@ -1,0 +1,51 @@
+{
+    "COMMON": {
+        "NAME": "Name",
+        "NEXT": "Next",
+        "NO": "No",
+        "PREVIEW": "Preview",
+        "COPY": "Copy",
+        "RESET": "Reset",
+        "UNDO": "Undo",
+        "REDO": "Redo",
+        "DUPLICATE": "Duplicar",
+        "DELETE": "Eliminar",
+        "CONFIRM": "Confirmar",
+        "CANCEL": "Cancelar"
+    },
+    "EDITOR": {
+        "ADD_ROW": "Añadir fila",
+        "LOAD_TEMPLATE": "Cargar plantilla",
+        "EMPTY_COLUMN_TEXT": "Sin contenido. Añade contenido arrastrando un bloque desde la derecha.",
+        "UP_ROW": "Subir fila",
+        "DOWN_ROW": "Bajar fila",
+        "UP_BLOCK": "Subir bloque",
+        "DOWN_BLOCK": "Bajar bloque",
+        "EDIT_TEXT": "Editar texto",
+        "UPLOAD_IMAGE": "Subir imagen",
+        "CONFIRM_CLEAR_CANVAS": "¿Seguro que quieres borrar todo el contenido del lienzo?",
+        "CONFIRM_EXIT_WITHOUT_SAVING_TITLE": "¿Seguro que quieres salir?",
+        "CONFIRM_EXIT_WITHOUT_SAVING_SUBTITLE": "Si sales ahora, perderás los cambios no guardados",
+        "COLUMN": "Columna",
+        "BG_COLOR": "Background Color",
+        "PADDING": "Padding",
+        "BORDER": "Border",
+        "CONTAINER_PADDING": "Padding del contenedor",
+        "TEXT_PROPERTIES": "Propiedades del texto",
+        "BUTTON_PROPERTIES": "Propiedades del botón",
+        "IMAGE_PROPERTIES": "Propiedades de la imagen",
+        "URL": "URL",
+        "ALIGNMENT": "Alineación",
+        "TEXT": "Texto",
+        "IMAGE_WIDTH": "Ancho de la imagen",
+        "LINE_HEIGHT": "Line Height",
+        "BLOCKS": {
+            "ELEMENTS": "Elementos",
+            "TEXT": "Texto",
+            "IMAGE": "Imagen",
+            "BTN_BLUE": "Botón Blue",
+            "BTN_DARK": "Botón Dark Blue",
+            "BTN_AQUA": "Botón Aqua"
+        }
+    }
+}

@@ -1,0 +1,81 @@
+$primary-color: #004283;
+
+$color-primary: #55c57a;
+$color-primary-light: #7ed56f;
+$color-primary-dark: #28b485;
+
+$color-grey-light-1: #f7f7f7;
+$color-grey-light-2: #eee;
+
+$color-grey-dark: #777;
+$color-grey-dark-2: #999;
+$color-grey-dark-3: #333;
+
+$color-white: #fff;
+$color-black: #000;
+
+$color-secondary-light: #ffb900;
+$color-secondary-dark: #ff7730;
+
+$color-tertiary-light: #2998ff;
+$color-tertiary-dark: #5643fa;
+
+//PALETA PRIMARIA
+$bbva-navy: #072146;
+$bbva-core-blue: #004481;
+$bbva-core-dark-blue: #043263;
+$bbva-core-light-blue: #1464A5;
+$bbva-medium-blue: #1973B8;
+$bbva-medium-light-blue: #49A5E6;
+$bbva-sky-blue: #5BBEFF;
+$bbva-sky-light-blue: #D4EDFC;
+$bbva-aqua: #2DCCCD;
+$bbva-aqua-dark: #028484;
+$bbva-aqua-medium: #02A5A5;
+$bbva-aqua-light: #5AC4C4;
+$bbva-aqua-white: #EAF9FA;
+
+//PALETA SECUNDARIA
+$bbva-600: #121212;
+$bbva-500: #666666;
+$bbva-400: #BDBDBD;
+$bbva-300: #D3D3D3;
+$bbva-200: #E9E9E9;
+$bbva-100: #F4F4F4;
+
+//PALETA TERCIARIA
+$bbva-green: #48AE64;
+$bbva-green-white: #D9EFE0;
+$bbva-orange: #F7893B;
+$bbva-red-dark: #B92A45;
+$bbva-coral-white: #FCDFDF;
+$bbva-sand-white: #F3EBD5;
+$bbva-gold: #D8BE75;
+
+//OTROS
+$engrisk-sky-gray-light-blue: #F3F5FA;
+$engrisk-sky-light-blue: #D3EDFC;
+$engrisk-medium-blue: #0066A7;
+$engrisk-medium-lighter-blue: #237ABA;
+
+
+//Fuentes
+$medium : 'BentonSansBBVA';
+$book: 'BentonSansBBVABook';
+$bold: 'BentonSansBBVABold';
+$light: 'BentonSansBBVALight';
+
+$breakpoints: (
+  'phone': 400px,
+  'phone-wide': 480px,
+  'phablet': 560px,
+  'tablet-small': 640px,
+  'tablet': 768px,
+  'mtablet' : 896px,
+  'tablet-wide': 1024px,
+  'desktop': 1248px,
+  'desktop-wide': 1440px,
+  'extra-deskpot-wide': 1500px
+);
+
+$browser-context: 16;

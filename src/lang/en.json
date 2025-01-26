@@ -1,0 +1,51 @@
+{
+    "COMMON": {
+        "NAME": "Nombre",
+        "NEXT": "Siguiente",
+        "NO": "No",
+        "PREVIEW": "Previsualizar",
+        "COPY": "Copiar",
+        "RESET": "Reset",
+        "UNDO": "Deshacer",
+        "REDO": "Rehacer",
+        "DUPLICATE": "Duplicate",
+        "DELETE": "Delete",
+        "CONFIRM": "Confirm",
+        "CANCEL": "Cancel"
+    },
+    "EDITOR": {
+        "ADD_ROW": "Add row",
+        "LOAD_TEMPLATE": "Load template",
+        "EMPTY_COLUMN_TEXT": "No content here. Drag content from right.",
+        "UP_ROW": "Subir fila",
+        "DOWN_ROW": "Bajar fila",
+        "UP_BLOCK": "Up block",
+        "DOWN_BLOCK": "Down block",
+        "EDIT_TEXT": "Edit text",
+        "UPLOAD_IMAGE": "Upload image",
+        "CONFIRM_CLEAR_CANVAS": "Are you sure you want to clear all the content from the canvas?",
+        "CONFIRM_EXIT_WITHOUT_SAVING_TITLE": "Are you sure you want to exit?",
+        "CONFIRM_EXIT_WITHOUT_SAVING_SUBTITLE": "If you exit now, you will lose any unsaved changes",
+        "COLUMN": "Column",
+        "BG_COLOR": "Background Color",
+        "PADDING": "Padding",
+        "BORDER": "Border",
+        "CONTAINER_PADDING": "Container padding",
+        "TEXT_PROPERTIES": "Text properties",
+        "BUTTON_PROPERTIES": "Button properties",
+        "IMAGE_PROPERTIES": "Image properties",
+        "URL": "URL",
+        "ALIGNMENT": "Alignment",
+        "TEXT": "Text",
+        "IMAGE_WIDTH": "Image Width",
+        "LINE_HEIGHT": "Line Height",
+        "BLOCKS": {
+            "ELEMENTS": "Elements",
+            "TEXT": "Text",
+            "IMAGE": "Image",
+            "BTN_BLUE": "Button Blue",
+            "BTN_DARK": "Button Dark",
+            "BTN_AQUA": "Button Aqua"
+        }
+    }
+}

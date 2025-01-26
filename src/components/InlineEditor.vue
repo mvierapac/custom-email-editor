@@ -9,16 +9,16 @@
   </template>
   
   <script>
-  import { InlineEditor } from 'ckeditor5'
+  import { ClassicEditor } from 'ckeditor5';
   import 'ckeditor5/ckeditor5.css'
-  import { ckeditorConfig, colors } from '../constans'
+  import { ckeditorConfig, colors } from '_editor/ckeditorConfig'
   
   export default {
     props: ['initialContent'],
     data () {
       return {
         isLayoutReady: true,
-        editor: InlineEditor,
+        editor: ClassicEditor,
         content: this.initialContent || '',
         colors: colors,
         config: ckeditorConfig
