@@ -13,7 +13,7 @@ The editor is part of a larger **professional project** developed for a specific
 - [Vue 3](https://vuejs.org/)
 - [MJML](https://mjml.io/)
 - [CKEditor](https://ckeditor.com/)
-- [Vite](https://vitejs.dev/) - Lightning-fast development build tool.
+- [Vite](https://vitejs.dev/)
 
 ## Demo
 
