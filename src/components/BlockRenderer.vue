@@ -1,68 +1,56 @@
 <template>
-  <div class="block-wrapper"
-    :class="{'selected-block': isSelected}"
+  <div
+    class="block-wrapper"
+    :class="{ 'selected-block': isSelected }"
     :data-block-id="block.blockId"
-    :style="{ 
+    :style="{
       'padding-top': block.properties?.containerPadding.top + 'px',
       'padding-right': block.properties?.containerPadding.right + 'px',
       'padding-bottom': block.properties?.containerPadding.bottom + 'px',
       'padding-left': block.properties?.containerPadding.left + 'px',
-      'text-align': block.properties?.alignment || 'center'
+      'text-align': block.properties?.alignment || 'center',
     }"
     @click="selectBlock"
   >
-
     <!-- Pop-up de acciones -->
     <div v-if="isSelected" class="block-action-panel">
       <v-tooltip v-if="showUpBtn" content-class="tooltip" location="bottom">
         <template v-slot:activator="{ props }">
-          <button 
+          <button
             v-bind="props"
             class="block-action-icon mdi mdi-chevron-up"
-            :style="{fontSize: '26px'}"
+            :style="{ fontSize: '26px' }"
             @click.stop="emitUpBlock"
-          >
-          </button>
+          ></button>
         </template>
         <span>{{ $t('EDITOR.UP_BLOCK') }}</span>
       </v-tooltip>
 
       <v-tooltip v-if="showDownBtn" content-class="tooltip" location="bottom">
         <template v-slot:activator="{ props }">
-          <button 
+          <button
             v-bind="props"
             class="block-action-icon mdi mdi-chevron-down"
-            :style="{fontSize: '26px'}"
+            :style="{ fontSize: '26px' }"
             @click.stop="emitDownBlock"
-          >
-          </button>
+          ></button>
         </template>
         <span>{{ $t('EDITOR.DOWN_BLOCK') }}</span>
       </v-tooltip>
 
       <v-tooltip v-if="block.type === 'text'" content-class="tooltip" location="bottom">
         <template v-slot:activator="{ props }">
-          <button 
-            v-bind="props"
-            class="block-action-icon mdi mdi-pencil"
-            @click.stop="emitEditText"
-          >
-          </button>
+          <button v-bind="props" class="block-action-icon mdi mdi-pencil" @click.stop="emitEditText"></button>
         </template>
         <span>{{ $t('EDITOR.EDIT_TEXT') }}</span>
       </v-tooltip>
-      
+
       <v-tooltip v-if="block.type === 'image' && block.editable !== false" content-class="tooltip" location="bottom">
         <template v-slot:activator="{ props }">
-          <button 
-            v-bind="props"
-            class="block-action-icon mdi mdi-image"
-            @click.stop="emitUploadImage"
-          >
-          </button>
+          <button v-bind="props" class="block-action-icon mdi mdi-image" @click.stop="emitUploadImage"></button>
         </template>
         <span>{{ $t('EDITOR.UPLOAD_IMAGE') }}</span>
-      </v-tooltip>       
+      </v-tooltip>
 
       <v-tooltip content-class="tooltip" location="bottom">
         <template v-slot:activator="{ props }">
@@ -73,65 +61,76 @@
 
       <v-tooltip content-class="tooltip" location="bottom">
         <template v-slot:activator="{ props }">
-          <button class="block-action-icon mdi-content-copy" v-bind="props" @click.stop="emitDuplicateBlock"></button>        </template>
+          <button class="block-action-icon mdi-content-copy" v-bind="props" @click.stop="emitDuplicateBlock"></button>
+        </template>
         <span>{{ $t('COMMON.COPY') }}</span>
       </v-tooltip>
-
     </div>
-    <button v-if="block.type === 'button'"
-            :style="{ 
-              backgroundColor: block.properties.backgroundColor,
-              color: block.properties.color,
-              padding: block.properties.padding,
-              borderRadius: block.properties.borderRadius,
-              border: 'none',
-              fontSize: '13px',
-              'line-height': '120%',
-              'font-weigth': '400',
-            }">
-      <a :href=block.properties.href :style="{color:'white'}">{{ block.properties.text }}</a>
+    <button
+      v-if="block.type === 'button'"
+      :style="{
+        backgroundColor: block.properties.backgroundColor,
+        color: block.properties.color,
+        padding: block.properties.padding,
+        borderRadius: block.properties.borderRadius,
+        border: 'none',
+        fontSize: '13px',
+        'line-height': '120%',
+        'font-weigth': '400',
+      }"
+    >
+      <a :href="block.properties.href" :style="{ color: 'white' }">{{ block.properties.text }}</a>
     </button>
 
-    <p v-else-if="block.type === 'text'"
-         v-html="block.properties.text" 
-         class="no-margin"
-         :class="block.blockId"
-         :style="{ 
+    <p
+      v-else-if="block.type === 'text'"
+      v-html="block.properties.text"
+      class="no-margin"
+      :class="block.blockId"
+      :style="{
+        fontSize: block.properties.fontSize,
+        color: block.properties.color,
+        lineHeight: block.properties.lineHeight + 'px',
+      }"
+    ></p>
+
+    <p
+      v-else-if="block.type === 'texticon'"
+      class="no-margin"
+      :class="block.blockId"
+      :style="{
+        fontSize: block.properties.fontSize,
+        color: block.properties.color,
+      }"
+    >
+      <img
+        :src="block.properties.iconSrc"
+        :width="block.properties.iconSize + 'px'"
+        alt="Icono"
+        style="display: inline-block; vertical-align: middle"
+      />
+      <span
+        :style="{
           fontSize: block.properties.fontSize,
           color: block.properties.color,
-          lineHeight: block.properties.lineHeight + 'px'
-         }">
+        }"
+        v-html="block.properties.text"
+      ></span>
     </p>
 
-    <p v-else-if="block.type === 'texticon'"
-         class="no-margin"
-         :class="block.blockId"
-         :style="{ 
-         fontSize: block.properties.fontSize,
-         color: block.properties.color
-         }">
-        <img 
-          :src="block.properties.iconSrc" 
-          :width="block.properties.iconSize + 'px'" 
-          alt="Icono" 
-          style="display: inline-block; vertical-align: middle;" 
-        />
-        <span 
-          :style="{ 
-            fontSize: block.properties.fontSize,
-            color: block.properties.color 
-          }"
-          v-html="block.properties.text"
-        ></span>
-    </p>
-
-        <!-- Renderizado del bloque de imagen -->
-        <img v-else-if="block.type === 'image'"
-          :src="block.properties.src"
-          :alt="block.properties.alt || 'Imagen de ejemplo'"
-          :href="block.properties.href"
-          :style="{ width: block.properties.width + '%', height: block.properties.height, display: 'inline-block', 'vertical-align': 'middle' }" 
-        />
+    <!-- Renderizado del bloque de imagen -->
+    <img
+      v-else-if="block.type === 'image'"
+      :src="block.properties.src"
+      :alt="block.properties.alt || 'Imagen de ejemplo'"
+      :href="block.properties.href"
+      :style="{
+        width: block.properties.width + '%',
+        height: block.properties.height,
+        display: 'inline-block',
+        'vertical-align': 'middle',
+      }"
+    />
     <!-- Puedes añadir otros tipos de bloques aquí -->
   </div>
 </template>
@@ -142,7 +141,7 @@ export default {
     block: Object,
     isSelected: Boolean,
     showUpBtn: Boolean,
-    showDownBtn: Boolean
+    showDownBtn: Boolean,
   },
   data() {
     return {
@@ -169,18 +168,17 @@ export default {
       this.$emit('edit-text');
     },
     emitUploadImage() {
-      this.$emit('upload-image')
-    }
-  }
+      this.$emit('upload-image');
+    },
+  },
 };
 </script>
 
 <style scoped lang="scss">
-  @import '@/assets/scss/_variables.scss';
-  @import '@/assets/scss/_mixins.scss';
+@import '@/assets/scss/_variables.scss';
+@import '@/assets/scss/_mixins.scss';
 a {
   text-decoration: none;
-
 }
 .block-wrapper {
   position: relative;
@@ -193,7 +191,7 @@ a {
 }
 
 .selected-block {
-  outline: 2px solid #1464A5;
+  outline: 2px solid #1464a5;
   outline-offset: -1px;
   box-sizing: border-box;
 }
@@ -225,7 +223,6 @@ a {
   min-width: 26px;
   font-size: 18px;
   cursor: pointer;
-  color: $bbva-core-blue;
+  color: $core-blue;
 }
-
 </style>

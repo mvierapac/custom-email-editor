@@ -13,5 +13,5 @@
 }
 
 @function rem($pixels, $context: $browser-context) {
-  @return #{$pixels/$context}rem
+  @return #{$pixels/$context}rem;
 }

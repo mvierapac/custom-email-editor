@@ -1,6 +1,4 @@
-
-
-export function generateThreeSevenStructure() { 
+export function generateThreeSevenStructure() {
   const timestamp = Date.now();
   return {
     isSelected: true,
@@ -8,81 +6,81 @@ export function generateThreeSevenStructure() {
     padding: { top: 10, right: 40, bottom: 10, left: 40 },
     columns: [
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `image-${timestamp}`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:33
+        width: 33,
       },
       {
-        content:[
+        content: [
           {
-            blockId:`text-${timestamp}-1`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center;; margin: 0;\"><span style=\"color:#004481;font-size:17px;\"><strong>Encabezado de ejemplo</strong></span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-1`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center;; margin: 0;"><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`text-${timestamp}-2`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center; margin: 0;\"><span style=\"color:#004481;font-size:14px;font-family:Arial;\">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-2`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center; margin: 0;"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`button-${timestamp}`,
-            type:"button",
-            properties:{
-              text:"Botón",
-              href:"",
-              backgroundColor:"#1973b8",
-              color:"#FFFFFF",
-              padding:"12px 32px",
-              borderRadius:"1px",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `button-${timestamp}`,
+            type: 'button',
+            properties: {
+              text: 'Botón',
+              href: '',
+              backgroundColor: '#1973b8',
+              color: '#FFFFFF',
+              padding: '12px 32px',
+              borderRadius: '1px',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{top:0,right:0,bottom:0,left:0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:67
-      }
-    ]
-  }
+        width: 67,
+      },
+    ],
+  };
 }
 
-export function generateSevenThreeStructure() { 
+export function generateSevenThreeStructure() {
   const timestamp = Date.now();
   return {
     isSelected: true,
@@ -90,81 +88,81 @@ export function generateSevenThreeStructure() {
     padding: { top: 10, right: 40, bottom: 10, left: 40 },
     columns: [
       {
-        content:[
+        content: [
           {
-            blockId:`text-${timestamp}-1`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center;; margin: 0;\"><span style=\"color:#004481;font-size:17px;\"><strong>Encabezado de ejemplo</strong></span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-1`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center;; margin: 0;"><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`text-${timestamp}-2`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center; margin: 0;\"><span style=\"color:#004481;font-size:14px;font-family:Arial;\">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-2`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center; margin: 0;"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`button-${timestamp}`,
-            type:"button",
-            properties:{
-              text:"Botón",
-              href:"",
-              backgroundColor:"#1973b8",
-              color:"#FFFFFF",
-              padding:"12px 32px",
-              borderRadius:"1px",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `button-${timestamp}`,
+            type: 'button',
+            properties: {
+              text: 'Botón',
+              href: '',
+              backgroundColor: '#1973b8',
+              color: '#FFFFFF',
+              padding: '12px 32px',
+              borderRadius: '1px',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{top:0,right:0,bottom:0,left:0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:67
+        width: 67,
       },
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `image-${timestamp}`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:33
-      }
-    ]
-  }
+        width: 33,
+      },
+    ],
+  };
 }
 
-export function generateThreeSevenWithMarginStructure() { 
+export function generateThreeSevenWithMarginStructure() {
   const timestamp = Date.now();
   return {
     isSelected: true,
@@ -172,81 +170,81 @@ export function generateThreeSevenWithMarginStructure() {
     padding: { top: 20, right: 40, bottom: 20, left: 40 },
     columns: [
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `image-${timestamp}`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#f0f0f0",right:"#f0f0f0",bottom:"#f0f0f0",left:"#f0f0f0"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#f0f0f0', right: '#f0f0f0', bottom: '#f0f0f0', left: '#f0f0f0' },
         },
-        width:33
+        width: 33,
       },
       {
-        content:[
+        content: [
           {
-            blockId:`text-${timestamp}-1`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center;; margin: 0;\"><span style=\"color:#004481;font-size:17px;\"><strong>Encabezado de ejemplo</strong></span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-1`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center;; margin: 0;"><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`text-${timestamp}-2`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center; margin: 0;\"><span style=\"color:#004481;font-size:14px;font-family:Arial;\">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-2`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center; margin: 0;"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`button-${timestamp}`,
-            type:"button",
-            properties:{
-              text:"Botón",
-              href:"",
-              backgroundColor:"#1973b8",
-              color:"#FFFFFF",
-              padding:"12px 32px",
-              borderRadius:"1px",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `button-${timestamp}`,
+            type: 'button',
+            properties: {
+              text: 'Botón',
+              href: '',
+              backgroundColor: '#1973b8',
+              color: '#FFFFFF',
+              padding: '12px 32px',
+              borderRadius: '1px',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{top:0,right:0,bottom:0,left:0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#f0f0f0",right:"#f0f0f0",bottom:"#f0f0f0",left:"#f0f0f0"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#f0f0f0', right: '#f0f0f0', bottom: '#f0f0f0', left: '#f0f0f0' },
         },
-        width:67
-      }
-    ]
-  }
+        width: 67,
+      },
+    ],
+  };
 }
 
-export function generateSevenThreeWithMarginStructure() { 
+export function generateSevenThreeWithMarginStructure() {
   const timestamp = Date.now();
   return {
     isSelected: true,
@@ -254,81 +252,81 @@ export function generateSevenThreeWithMarginStructure() {
     padding: { top: 20, right: 40, bottom: 20, left: 40 },
     columns: [
       {
-        content:[
+        content: [
           {
-            blockId:`text-${timestamp}-1`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center;; margin: 0;\"><span style=\"color:#004481;font-size:17px;\"><strong>Encabezado de ejemplo</strong></span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-1`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center;; margin: 0;"><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`text-${timestamp}-2`,
-            type:"text",
-            properties:{
-              text:"<p style=\"text-align:center; margin: 0;\"><span style=\"color:#004481;font-size:14px;font-family:Arial;\">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>",
-              fontSize:"14px",
-              lineHeight:20,
-              color:"#000000",
-              containerPadding:{"top":"10","right":"10","bottom":"10","left":"10"}
-            }
+            blockId: `text-${timestamp}-2`,
+            type: 'text',
+            properties: {
+              text: '<p style="text-align:center; margin: 0;"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
+              fontSize: '14px',
+              lineHeight: 20,
+              color: '#000000',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
-            blockId:`button-${timestamp}`,
-            type:"button",
-            properties:{
-              text:"Botón",
-              href:"",
-              backgroundColor:"#1973b8",
-              color:"#FFFFFF",
-              padding:"12px 32px",
-              borderRadius:"1px",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `button-${timestamp}`,
+            type: 'button',
+            properties: {
+              text: 'Botón',
+              href: '',
+              backgroundColor: '#1973b8',
+              color: '#FFFFFF',
+              padding: '12px 32px',
+              borderRadius: '1px',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{top:0,right:0,bottom:0,left:0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#f0f0f0",right:"#f0f0f0",bottom:"#f0f0f0",left:"#f0f0f0"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#f0f0f0', right: '#f0f0f0', bottom: '#f0f0f0', left: '#f0f0f0' },
         },
-        width:67
+        width: 67,
       },
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
-          }
+            blockId: `image-${timestamp}`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#f0f0f0",right:"#f0f0f0",bottom:"#f0f0f0",left:"#f0f0f0"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#f0f0f0', right: '#f0f0f0', bottom: '#f0f0f0', left: '#f0f0f0' },
         },
-        width:33
-      }
-    ]
-  }
+        width: 33,
+      },
+    ],
+  };
 }
 
-export function generateTwoColumnstructure() { 
+export function generateTwoColumnstructure() {
   const timestamp = Date.now();
   return {
     isSelected: true,
@@ -336,19 +334,19 @@ export function generateTwoColumnstructure() {
     padding: { top: 10, right: 40, bottom: 10, left: 40 },
     columns: [
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}-1`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
+            blockId: `image-${timestamp}-1`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
             blockId: `text-${timestamp}-2`,
@@ -356,15 +354,15 @@ export function generateTwoColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0; "><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `text-${timestamp}-3`,
@@ -372,15 +370,15 @@ export function generateTwoColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `button-${timestamp}-4`,
@@ -398,32 +396,32 @@ export function generateTwoColumnstructure() {
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
-          },       
+              },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:50
+        width: 50,
       },
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}-5`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
+            blockId: `image-${timestamp}-5`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
             blockId: `text-${timestamp}-6`,
@@ -431,15 +429,15 @@ export function generateTwoColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0; "><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `text-${timestamp}-7`,
@@ -447,15 +445,15 @@ export function generateTwoColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `button-${timestamp}-8`,
@@ -473,23 +471,23 @@ export function generateTwoColumnstructure() {
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
-          },       
+              },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:50
+        width: 50,
       },
-    ]
-  }
+    ],
+  };
 }
 
-export function generateThreeColumnstructure() { 
+export function generateThreeColumnstructure() {
   const timestamp = Date.now();
   return {
     isSelected: true,
@@ -497,19 +495,19 @@ export function generateThreeColumnstructure() {
     padding: { top: 10, right: 40, bottom: 10, left: 40 },
     columns: [
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}-1`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
+            blockId: `image-${timestamp}-1`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
             blockId: `text-${timestamp}-2`,
@@ -517,15 +515,15 @@ export function generateThreeColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0; "><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `text-${timestamp}-3`,
@@ -533,15 +531,15 @@ export function generateThreeColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `button-${timestamp}-4`,
@@ -559,32 +557,32 @@ export function generateThreeColumnstructure() {
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
-          },       
+              },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:33
+        width: 33,
       },
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}-5`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
+            blockId: `image-${timestamp}-5`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
             blockId: `text-${timestamp}-6`,
@@ -592,15 +590,15 @@ export function generateThreeColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0; "><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `text-${timestamp}-7`,
@@ -608,15 +606,15 @@ export function generateThreeColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `button-${timestamp}-8`,
@@ -634,32 +632,32 @@ export function generateThreeColumnstructure() {
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
-          },       
+              },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:33
+        width: 33,
       },
       {
-        content:[
+        content: [
           {
-            blockId:`image-${timestamp}-9`,
-            type:"image",
-            properties:{
-              src:"https://picsum.photos/200",
-              alt:"Imagen de ejemplo",
-              href:"",
-              width:100,
-              height:"auto",
-              alignment:"center",
-              containerPadding:{top:"10",right:"10",bottom:"10",left:"10"}
-            }
+            blockId: `image-${timestamp}-9`,
+            type: 'image',
+            properties: {
+              src: 'https://picsum.photos/200',
+              alt: 'Imagen de ejemplo',
+              href: '',
+              width: 100,
+              height: 'auto',
+              alignment: 'center',
+              containerPadding: { top: '10', right: '10', bottom: '10', left: '10' },
+            },
           },
           {
             blockId: `text-${timestamp}-10`,
@@ -667,15 +665,15 @@ export function generateThreeColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0; "><span style="color:#004481;font-size:17px;"><strong>Encabezado de ejemplo</strong></span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `text-${timestamp}-11`,
@@ -683,15 +681,15 @@ export function generateThreeColumnstructure() {
             properties: {
               text: '<p style="text-align:center; margin:0"><span style="color:#004481;font-size:14px;font-family:Arial;">Este texto es de ejemplo. Haciendo clic en el icono del lápiz puedes editarlo y darle formato según las necesidades de tu newsletter.</span></p>',
               fontSize: '14px',
-              lineHeight:20,
+              lineHeight: 20,
               color: '#000000',
               containerPadding: {
                 top: '10',
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
+              },
+            },
           },
           {
             blockId: `button-${timestamp}-12`,
@@ -709,18 +707,18 @@ export function generateThreeColumnstructure() {
                 right: '10',
                 bottom: '10',
                 left: '10',
-              }
-            }
-          },       
+              },
+            },
+          },
         ],
-        backgroundColor:"#ffffff",
-        padding:{"top":0,"right":0,"bottom":0,"left":0},
-        border:{
-          width:{top:0,right:0,bottom:0,left:0},
-          color:{top:"#000",right:"#000",bottom:"#000",left:"#000"}
+        backgroundColor: '#ffffff',
+        padding: { top: 0, right: 0, bottom: 0, left: 0 },
+        border: {
+          width: { top: 0, right: 0, bottom: 0, left: 0 },
+          color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
         },
-        width:33
-      },      
-    ]
-  }
+        width: 33,
+      },
+    ],
+  };
 }

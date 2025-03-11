@@ -21,46 +21,39 @@ $color-tertiary-light: #2998ff;
 $color-tertiary-dark: #5643fa;
 
 //PALETA PRIMARIA
-$bbva-navy: #072146;
-$bbva-core-blue: #004481;
-$bbva-core-dark-blue: #043263;
-$bbva-core-light-blue: #1464A5;
-$bbva-medium-blue: #1973B8;
-$bbva-medium-light-blue: #49A5E6;
-$bbva-sky-blue: #5BBEFF;
-$bbva-sky-light-blue: #D4EDFC;
-$bbva-aqua: #2DCCCD;
-$bbva-aqua-dark: #028484;
-$bbva-aqua-medium: #02A5A5;
-$bbva-aqua-light: #5AC4C4;
-$bbva-aqua-white: #EAF9FA;
+$navy: #072146;
+$core-blue: #004481;
+$core-dark-blue: #043263;
+$core-light-blue: #1464a5;
+$medium-blue: #1973b8;
+$medium-light-blue: #49a5e6;
+$sky-blue: #5bbeff;
+$sky-light-blue: #d4edfc;
+$aqua: #2dcccd;
+$aqua-dark: #028484;
+$aqua-medium: #02a5a5;
+$aqua-light: #5ac4c4;
+$aqua-white: #eaf9fa;
 
 //PALETA SECUNDARIA
-$bbva-600: #121212;
-$bbva-500: #666666;
-$bbva-400: #BDBDBD;
-$bbva-300: #D3D3D3;
-$bbva-200: #E9E9E9;
-$bbva-100: #F4F4F4;
+$grey-600: #121212;
+$grey-500: #666666;
+$grey-400: #bdbdbd;
+$grey-300: #d3d3d3;
+$grey-200: #e9e9e9;
+$grey-100: #f4f4f4;
 
 //PALETA TERCIARIA
-$bbva-green: #48AE64;
-$bbva-green-white: #D9EFE0;
-$bbva-orange: #F7893B;
-$bbva-red-dark: #B92A45;
-$bbva-coral-white: #FCDFDF;
-$bbva-sand-white: #F3EBD5;
-$bbva-gold: #D8BE75;
-
-//OTROS
-$engrisk-sky-gray-light-blue: #F3F5FA;
-$engrisk-sky-light-blue: #D3EDFC;
-$engrisk-medium-blue: #0066A7;
-$engrisk-medium-lighter-blue: #237ABA;
-
+$green: #48ae64;
+$green-white: #d9efe0;
+$orange: #f7893b;
+$red-dark: #b92a45;
+$coral-white: #fcdfdf;
+$sand-white: #f3ebd5;
+$gold: #d8be75;
 
 //Fuentes
-$medium : 'BentonSansBBVA';
+$medium: 'BentonSansBBVA';
 $book: 'BentonSansBBVABook';
 $bold: 'BentonSansBBVABold';
 $light: 'BentonSansBBVALight';
@@ -71,11 +64,11 @@ $breakpoints: (
   'phablet': 560px,
   'tablet-small': 640px,
   'tablet': 768px,
-  'mtablet' : 896px,
+  'mtablet': 896px,
   'tablet-wide': 1024px,
   'desktop': 1248px,
   'desktop-wide': 1440px,
-  'extra-deskpot-wide': 1500px
+  'extra-deskpot-wide': 1500px,
 );
 
 $browser-context: 16;

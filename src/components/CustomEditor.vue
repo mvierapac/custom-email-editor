@@ -1,138 +1,142 @@
 <template>
   <div>
-
     <div class="wrapper">
       <div>
-        <HeaderPanel 
+        <HeaderPanel
           @clear-canvas="openModalConfirm('clearCanvas')"
+          :disableUndo="!history.past.length > 0"
+          :disableRedo="!history.future.length > 0"
           @undo="undo"
           @redo="redo"
           @show-preview="showPreview"
         />
         <div class="editor-layout">
           <div class="canvas" ref="editorContainer">
-          <div
-            v-for="(row, rowIndex) in rows"
-            :key="rowIndex"
-            :class="[
-              'row', 
-              { 'row-selected': row.isSelected },
-              {'z-index-row': this.selectedRowIndex === rowIndex || this.selectedBlockRowIndex === rowIndex},
-              getColumnClass(row.columns.length,row.columns[0].width)
-            ]"
-            @click="selectRow(rowIndex, $event)"
-          >
-
-            <AddRowButton v-if="rowIndex === rows.length -1" @add-row="addRow"/>
-
-            <!-- Panel de acciones de la fila -->
             <div
-              v-if="row.isSelected"
-              class="row-action-panel"
+              v-for="(row, rowIndex) in rows"
+              :key="rowIndex"
+              :class="[
+                'row',
+                { 'row-selected': row.isSelected },
+                { 'z-index-row': this.selectedRowIndex === rowIndex || this.selectedBlockRowIndex === rowIndex },
+                getColumnClass(row.columns.length, row.columns[0].width),
+              ]"
+              @click="selectRow(rowIndex, $event)"
             >
-            <v-tooltip v-if="rowIndex !== 0" content-class="tooltip" location="bottom">
-              <template v-slot:activator="{ props }">
-                <button 
-                  v-bind="props"
-                  class="block-action-icon mdi mdi-chevron-up"
-                  :style="{fontSize: '26px'}"
-                  @click.stop="upRow(rowIndex)"
-                >
-                </button>
-              </template>
-              <span>{{ $t('EDITOR.UP_ROW') }}</span>
-            </v-tooltip>
+              <AddRowButton v-if="rowIndex === rows.length - 1" @add-row="addRow" />
 
-            <v-tooltip v-if="rowIndex !== rows.length-1" content-class="tooltip" location="bottom">
-              <template v-slot:activator="{ props }">
-                <button 
-                  v-bind="props"
-                  class="block-action-icon mdi mdi-chevron-down"
-                  :style="{fontSize: '26px'}"
-                  @click.stop="downRow(rowIndex)"
-                >
-                </button>
-              </template>
-              <span>{{ $t('EDITOR.DOWN_ROW') }}</span>
-            </v-tooltip>
-            
-            <v-tooltip content-class="tooltip" location="bottom">
-              <template v-slot:activator="{ props }">
-                <button class="row-action-icon mdi mdi-delete" v-bind="props" @click="handleDeleteRow(rowIndex)"></button>
-              </template>
-              <span>{{ $t('COMMON.DELETE') }}</span>
-            </v-tooltip>
+              <!-- Panel de acciones de la fila -->
+              <div v-if="row.isSelected" class="row-action-panel">
+                <v-tooltip v-if="rowIndex !== 0" content-class="tooltip" location="bottom">
+                  <template v-slot:activator="{ props }">
+                    <button
+                      v-bind="props"
+                      class="block-action-icon mdi mdi-chevron-up"
+                      :style="{ fontSize: '26px' }"
+                      @click.stop="upRow(rowIndex)"
+                    ></button>
+                  </template>
+                  <span>{{ $t('EDITOR.UP_ROW') }}</span>
+                </v-tooltip>
 
-            <v-tooltip content-class="tooltip" location="bottom">
-              <template v-slot:activator="{ props }">
-                <button class="row-action-icon mdi mdi-content-copy" v-bind="props" @click="handleDuplicateRow(rowIndex)"></button>
-              </template>
-              <span>{{ $t('COMMON.DUPLICATE') }}</span>
-            </v-tooltip> 
+                <v-tooltip v-if="rowIndex !== rows.length - 1" content-class="tooltip" location="bottom">
+                  <template v-slot:activator="{ props }">
+                    <button
+                      v-bind="props"
+                      class="block-action-icon mdi mdi-chevron-down"
+                      :style="{ fontSize: '26px' }"
+                      @click.stop="downRow(rowIndex)"
+                    ></button>
+                  </template>
+                  <span>{{ $t('EDITOR.DOWN_ROW') }}</span>
+                </v-tooltip>
 
-            </div>
-            <!-- Renderización dinámica de columnas -->
-            <div 
-              class="columns-container"
-              :style="{
+                <v-tooltip content-class="tooltip" location="bottom">
+                  <template v-slot:activator="{ props }">
+                    <button
+                      class="row-action-icon mdi mdi-delete"
+                      v-bind="props"
+                      @click="handleDeleteRow(rowIndex)"
+                    ></button>
+                  </template>
+                  <span>{{ $t('COMMON.DELETE') }}</span>
+                </v-tooltip>
+
+                <v-tooltip content-class="tooltip" location="bottom">
+                  <template v-slot:activator="{ props }">
+                    <button
+                      class="row-action-icon mdi mdi-content-copy"
+                      v-bind="props"
+                      @click="handleDuplicateRow(rowIndex)"
+                    ></button>
+                  </template>
+                  <span>{{ $t('COMMON.DUPLICATE') }}</span>
+                </v-tooltip>
+              </div>
+              <!-- Renderización dinámica de columnas -->
+              <div
+                class="columns-container"
+                :style="{
                   backgroundColor: row.bgColor,
                   paddingTop: row.padding.top + 'px',
                   paddingRight: row.padding.right + 'px',
                   paddingBottom: row.padding.bottom + 'px',
                   paddingLeft: row.padding.left + 'px',
-                }"              
-              >
-              <div
-                v-for="(column, columnIndex) in row.columns"
-                :key="columnIndex"
-                class="column"
-                :style="{
-                  backgroundColor: column.backgroundColor || '#ffffff',
-                  paddingTop: column.padding.top + 'px',
-                  paddingRight: column.padding.right + 'px',
-                  paddingBottom: column.padding.bottom + 'px',
-                  paddingLeft: column.padding.left + 'px',
-                  borderTop: `${column.border.width?.top}px solid ${column.border.color.top}`,
-                  borderRight: `${column.border.width?.right}px solid ${column.border.color.right}`,
-                  borderBottom: `${column.border.width?.bottom}px solid ${column.border.color.bottom}`,
-                  borderLeft: `${column.border.width?.left}px solid ${column.border.color.left}`
                 }"
-                :class="{'column-outlined': !column.content.length, 'column-min-height': !column.content.length}"
-                @dragover.prevent
-                @drop="addBlockToCanvas(rowIndex, columnIndex)"
               >
-                <div  v-if="column.content.length">
-                  <BlockRenderer
-                    v-for="(block, index) in column.content"
-                    :key="block.blockId"
-                    :block="block"
-                    :isSelected ="selectedBlockId === block.blockId"
-                    :showUpBtn="index !== 0 && column.content.length > 1"
-                    :showDownBtn="index !== column.content.length-1"
-                    @block-selected="handleBlockSelection"
-                    @delete-block="handleDeleteBlock" 
-                    @duplicate-block="handleDuplicateBlock"
-                    @up-block="upBlock(index)"
-                    @down-block="downBlock(index)"
-                    @edit-text="openModalEditText(block)"
-                    @upload-image="openPickerImage()"
-                  />
+                <div
+                  v-for="(column, columnIndex) in row.columns"
+                  :key="columnIndex"
+                  class="column"
+                  :style="{
+                    backgroundColor: column.backgroundColor || '#ffffff',
+                    paddingTop: column.padding.top + 'px',
+                    paddingRight: column.padding.right + 'px',
+                    paddingBottom: column.padding.bottom + 'px',
+                    paddingLeft: column.padding.left + 'px',
+                    borderTop: `${column.border.width?.top}px solid ${column.border.color.top}`,
+                    borderRight: `${column.border.width?.right}px solid ${column.border.color.right}`,
+                    borderBottom: `${column.border.width?.bottom}px solid ${column.border.color.bottom}`,
+                    borderLeft: `${column.border.width?.left}px solid ${column.border.color.left}`,
+                  }"
+                  :class="{ 'column-outlined': !column.content.length, 'column-min-height': !column.content.length }"
+                  @dragover.prevent
+                  @drop="addBlockToCanvas(rowIndex, columnIndex)"
+                >
+                  <div v-if="column.content.length">
+                    <BlockRenderer
+                      v-for="(block, index) in column.content"
+                      :key="block.blockId"
+                      :block="block"
+                      :isSelected="selectedBlockId === block.blockId"
+                      :showUpBtn="index !== 0 && column.content.length > 1"
+                      :showDownBtn="index !== column.content.length - 1"
+                      @block-selected="handleBlockSelection"
+                      @delete-block="handleDeleteBlock"
+                      @duplicate-block="handleDuplicateBlock"
+                      @up-block="upBlock(index)"
+                      @down-block="downBlock(index)"
+                      @edit-text="openModalEditText(block)"
+                      @upload-image="openPickerImage()"
+                    />
+                  </div>
+                  <p v-else :style="{ 'align-self': 'center' }">{{ $t('EDITOR.EMPTY_COLUMN_TEXT') }}</p>
                 </div>
-              <p v-else :style="{'align-self': 'center'}">{{ $t('EDITOR.EMPTY_COLUMN_TEXT') }}</p>
               </div>
             </div>
           </div>
-        </div>          
         </div>
       </div>
       <div>
         <div class="lateral-panel">
           <configure-columns-panel
             v-if="selectedRowIndex !== null"
+            :emptyRowSelected="emptyRowSelected"
             @configure-columns="configureColumns"
           />
           <Predefined-rows-panel
             v-if="selectedRowIndex !== null"
+            :emptyRowSelected="emptyRowSelected"
             @drag-start="handleDragStart"
           />
           <Tools-panel ref="toolsPanel" @drag-start="handleDragStart" />
@@ -198,10 +202,9 @@
             @update-img-width="updateImageWidth"
             @update-img-src="updateImageSrc"
           />
-
         </div>
-      </div> 
-  </div>
+      </div>
+    </div>
 
     <!-- Modal confirm -->
     <modal
@@ -213,68 +216,66 @@
       :textLink="$t('COMMON.CANCEL')"
       @eventButtonModal="handleModalConfirmAction"
       @eventLinkModal="modalConfirm.close"
-    >
-    </modal>
+    ></modal>
 
-    <EditTextDialog 
-      v-if="modalEditText.shown" 
+    <EditTextDialog
+      v-if="modalEditText.shown"
       class="modal-ckeditor"
       @confirm="updateTextBlockContent"
       @close="modalEditText.close"
     >
-
       <InlineEditor
         :initialContent="modalEditText.originalText"
+        :bgColor="modalEditText.backgroundColor"
         @updateContent="updateNewText"
       />
     </EditTextDialog>
 
-    <PreviewContent
-      :showPreview="showPreviewContent"
-      :template="htmlForPreview"
-      @close="closePreview"
-    ></PreviewContent>
-
+    <PreviewContent :showPreview="showPreviewContent" :template="htmlForPreview" @close="closePreview"></PreviewContent>
   </div>
 </template>
 
 <script>
-import mjml2html from 'mjml-browser'
-import InlineEditor from './InlineEditor.vue'
+import mjml2html from 'mjml-browser';
+import InlineEditor from './InlineEditor.vue';
 
-import ConfigureColumnsPanel from './lateralPanelComponents/ConfigureColumnsPanel.vue'
-import ColumnPropertiesPanel from './lateralPanelComponents/ColumnPropertiesPanel.vue'
-import RowPropertiesPanel from './lateralPanelComponents/RowPropertiesPanel.vue'
-import ColumnTabs from './lateralPanelComponents/ColumnTabs.vue'
-import ToolsPanel from './lateralPanelComponents/ToolsPanel.vue'
-import PredefinedRowsPanel from './lateralPanelComponents/PredefinedRowsPanel.vue'
-import ButtonPropertiesPanel from './lateralPanelComponents/ButtonPropertiesPanel.vue'
-import TextPropertiesPanel from './lateralPanelComponents/TextPropertiesPanel.vue'
-import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.vue'
+import ConfigureColumnsPanel from './lateralPanelComponents/ConfigureColumnsPanel.vue';
+import ColumnPropertiesPanel from './lateralPanelComponents/ColumnPropertiesPanel.vue';
+import RowPropertiesPanel from './lateralPanelComponents/RowPropertiesPanel.vue';
+import ColumnTabs from './lateralPanelComponents/ColumnTabs.vue';
+import ToolsPanel from './lateralPanelComponents/ToolsPanel.vue';
+import PredefinedRowsPanel from './lateralPanelComponents/PredefinedRowsPanel.vue';
+import ButtonPropertiesPanel from './lateralPanelComponents/ButtonPropertiesPanel.vue';
+import TextPropertiesPanel from './lateralPanelComponents/TextPropertiesPanel.vue';
+import ImagePropertiesPanel from './lateralPanelComponents/ImagePropertiesPanel.vue';
 
-import AddRowButton from './auxiliarComponents/AddRowButton.vue'
-import HeaderPanel from './auxiliarComponents/HeaderPanel.vue'
-import ActionsButtonPanel from '_editor/auxiliarComponents/ActionsButtonsPanel.vue'
+import AddRowButton from './auxiliarComponents/AddRowButton.vue';
+import HeaderPanel from './auxiliarComponents/HeaderPanel.vue';
+import ActionsButtonPanel from '_editor/auxiliarComponents/ActionsButtonsPanel.vue';
 
-import BlockRenderer from './BlockRenderer.vue'
-import EditTextDialog from './auxiliarComponents/EditTextDialog.vue'
-import PreviewContent from './auxiliarComponents/PreviewContent.vue'
-import Modal from './Modal.vue'
+import BlockRenderer from './BlockRenderer.vue';
+import EditTextDialog from './auxiliarComponents/EditTextDialog.vue';
+import PreviewContent from './auxiliarComponents/PreviewContent.vue';
+import Modal from './Modal.vue';
 
-import { generateButtonBlock, generateImgBlock, generateTextBlock } from '_editor/generateBlocksFunctions'
-import { generateTwoColumnstructure, generateThreeColumnstructure, generateThreeSevenStructure, generateSevenThreeStructure } from '_editor/generateCustomRowsFunctions.js'
+import { generateButtonBlock, generateImgBlock, generateTextBlock } from '_editor/generateBlocksFunctions';
+import {
+  generateTwoColumnstructure,
+  generateThreeColumnstructure,
+  generateThreeSevenStructure,
+  generateSevenThreeStructure,
+} from '_editor/generateCustomRowsFunctions.js';
 
 export default {
-
-  mounted () {
+  mounted() {
     // Intercepta todos los clics en enlaces dentro del editor
-    this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation)
-    this.saveHistory()
-    this.selectRow(0)
+    this.$refs.editorContainer.addEventListener('click', this.preventLinkNavigation);
+    this.saveHistory();
+    this.selectRow(0);
   },
 
-  beforeUnmount () {
-    this.$refs.editorContainer.removeEventListener('click', this.preventLinkNavigation)
+  beforeUnmount() {
+    this.$refs.editorContainer.removeEventListener('click', this.preventLinkNavigation);
   },
 
   components: {
@@ -297,13 +298,12 @@ export default {
     PreviewContent,
   },
 
-  data () {
+  data() {
     return {
       showCkeditor: false,
       selectedColumnIndex: null,
       selectedBlockId: null,
       selectedRowIndex: null, // Almacena el índice de la fila seleccionada
-      selectedRowColumns: 0,
       selectedBlockRowIndex: null,
       activeColumn: null, // Columna actualmente seleccionada en el panel
       dragItemType: null,
@@ -317,28 +317,30 @@ export default {
           isSelected: false,
           bgColor: '#ffffff',
           padding: { top: 10, right: 40, bottom: 10, left: 40 },
-          columns: [{
-            content: [],
-            width: "100%",
-            backgroundColor: '#ffffff',
-            padding: { top: 0, right: 0, bottom: 0, left: 0 },
-            border: {
-              width: { top: 0, right: 0, bottom: 0, left: 0 },
-              color: { top: '#000000', right: '#000000', bottom: '#000000', left: '#000000' }
-            }
-          }]
-        }
+          columns: [
+            {
+              content: [],
+              width: 100,
+              backgroundColor: '#ffffff',
+              padding: { top: 0, right: 0, bottom: 0, left: 0 },
+              border: {
+                width: { top: 0, right: 0, bottom: 0, left: 0 },
+                color: { top: '#000000', right: '#000000', bottom: '#000000', left: '#000000' },
+              },
+            },
+          ],
+        },
       ],
       history: {
         past: [],
         present: null,
-        future: []
+        future: [],
       },
       minWidth: {
-        50: '260px' ,
-        33: '171px' ,
-        67:  '348px',
-        100: '520px'
+        50: '260px',
+        33: '171px',
+        67: '348px',
+        100: '520px',
       },
       editingText: false,
       showPreviewContent: false,
@@ -347,163 +349,176 @@ export default {
         shown: false,
         action: null,
         close: () => {
-          this.modalConfirm.action = null
-          this.modalConfirm.shown = false
-        }
+          this.modalConfirm.action = null;
+          this.modalConfirm.shown = false;
+        },
       },
       // CKEDITOR
       modalEditText: {
         shown: false,
         originalText: null,
+        backgroundColor: '',
         close: () => {
-          this.modalEditText.originalText = null
-          this.modalEditText.shown = false
-        }
+          this.modalEditText.originalText = null;
+          this.modalEditText.shown = false;
+          this.modalEditText.backgroundColor = '';
+        },
       },
-      draggedRowIndex: null
-    }
+      draggedRowIndex: null,
+    };
   },
   computed: {
+    selectedRowColumns() {
+      return this.rows[this.selectedRowIndex]?.columns.length;
+    },
+    emptyRowSelected() {
+      return this.rows[this.selectedRowIndex]?.columns.every(
+        (column) => !column.content || column.content.length === 0
+      );
+    },
   },
   methods: {
-    preventLinkNavigation (event) {
-      const target = event.target.closest('a') // Verificamos si el clic fue en un enlace
+    preventLinkNavigation(event) {
+      const target = event.target.closest('a'); // Verificamos si el clic fue en un enlace
 
       if (target && target.closest('.block-wrapper')) {
-      // Si el enlace está dentro del editor (e.g., en un .block-wrapper), prevenimos la redirección
-        event.preventDefault()
+        // Si el enlace está dentro del editor (e.g., en un .block-wrapper), prevenimos la redirección
+        event.preventDefault();
       }
     },
 
-    openModalConfirm (action) {
-      this.modalConfirm.action = action
-      this.modalConfirm.shown = true
+    openModalConfirm(action) {
+      this.modalConfirm.action = action;
+      this.modalConfirm.shown = true;
     },
 
-    handleModalConfirmAction () {
-      this[this.modalConfirm.action]()
-      this.modalConfirm.close()
+    handleModalConfirmAction() {
+      this[this.modalConfirm.action]();
+      this.modalConfirm.close();
     },
 
     handleDragStart(type, colorDraggedBtn = null) {
       this.dragItemType = type;
-      this.colorDraggedBtn = colorDraggedBtn
+      this.colorDraggedBtn = colorDraggedBtn;
     },
 
     hasContentInRow(index) {
-      return this.rows[index].columns.some(column => column.content.length > 0);
+      return this.rows[index].columns.some((column) => column.content.length > 0);
     },
 
-    addRowWithContent (content) {
-      this.addRow()
-      this.rows[this.rows.length-1] = content
-      this.selectRow(this.rows.length-1)
+    addRowWithContent(content) {
+      this.addRow();
+      this.rows[this.rows.length - 1] = content;
+      this.selectRow(this.rows.length - 1);
     },
 
-    addBlockToCanvas (rowIndex, columnIndex) {
-      if (!this.dragItemType) return
+    addBlockToCanvas(rowIndex, columnIndex) {
+      if (!this.dragItemType) return;
 
-      const blockId = `${this.dragItemType}-${Date.now()}`
+      const blockId = `${this.dragItemType}-${Date.now()}`;
 
-      let newBlock
+      let newBlock;
       if (this.dragItemType === 'button') {
-        newBlock = generateButtonBlock(this.colorDraggedBtn)
+        newBlock = generateButtonBlock(this.colorDraggedBtn);
       } else if (this.dragItemType === 'text') {
-        newBlock = generateTextBlock()
+        newBlock = generateTextBlock();
       } else if (this.dragItemType === 'image') {
-        newBlock = generateImgBlock()
+        newBlock = generateImgBlock();
       }
 
       if (this.dragItemType === 'threeSeven') {
         const structure = generateThreeSevenStructure();
-        this.handleAddStructureToCanvas(structure, rowIndex)
+        this.handleAddStructureToCanvas(structure, rowIndex);
       }
 
       if (this.dragItemType === 'sevenThree') {
         const structure = generateSevenThreeStructure();
-        this.handleAddStructureToCanvas(structure, rowIndex)
+        this.handleAddStructureToCanvas(structure, rowIndex);
       }
 
       if (this.dragItemType === 'two-column') {
         const structure = generateTwoColumnstructure();
-        this.handleAddStructureToCanvas(structure, rowIndex)
+        this.handleAddStructureToCanvas(structure, rowIndex);
       }
 
       if (this.dragItemType === 'three-column') {
         const structure = generateThreeColumnstructure();
-        this.handleAddStructureToCanvas(structure, rowIndex)
+        this.handleAddStructureToCanvas(structure, rowIndex);
       }
       // Actualizamos el contenido de la columna con el bloque JSON
       if (newBlock) {
-        this.rows[rowIndex].columns[columnIndex].content.push(newBlock)
-        this.handleBlockSelection(blockId)
+        this.rows[rowIndex].columns[columnIndex].content.push(newBlock);
+        this.handleBlockSelection(blockId);
       }
       // Reseteamos el tipo de bloque arrastrado
-      this.dragItemType = null
-      this.saveHistory('createBlock')
+      this.dragItemType = null;
+      this.saveHistory('createBlock');
     },
-    handleAddStructureToCanvas (structure, rowIndex) {
+    handleAddStructureToCanvas(structure, rowIndex) {
       if (this.hasContentInRow(rowIndex)) {
-          this.addRowWithContent(structure)
-        } else {
-          this.rows[rowIndex] = structure
-          this.selectRow(rowIndex)
-        }      
+        this.addRowWithContent(structure);
+      } else {
+        this.rows[rowIndex] = structure;
+        this.selectRow(rowIndex);
+      }
     },
-    clearCanvas () {
+    clearCanvas() {
       // Limpiamos todas las filas
       this.rows = [
         {
           isSelected: false,
           bgColor: '#ffffff',
           padding: { top: 10, right: 40, bottom: 10, left: 40 },
-          columns: [{
+          columns: [
+            {
+              content: [],
+              backgroundColor: '#ffffff',
+              width: 100,
+              padding: { top: 0, right: 0, bottom: 0, left: 0 },
+              border: {
+                width: { top: 0, right: 0, bottom: 0, left: 0 },
+                color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
+              },
+            },
+          ],
+        },
+      ];
+      this.selectedRowIndex = null;
+      this.activeColumn = null;
+      this.selectedBlock = null;
+      this.selectRow(0);
+    },
+    addRow() {
+      this.rows.push({
+        isSelected: false,
+        bgColor: '#ffffff',
+        padding: { top: 10, right: 40, bottom: 10, left: 40 },
+        columns: [
+          {
+            width: 100,
             content: [],
             backgroundColor: '#ffffff',
             padding: { top: 0, right: 0, bottom: 0, left: 0 },
             border: {
               width: { top: 0, right: 0, bottom: 0, left: 0 },
-              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
-            }
-          }]
-        }
-      ]
-      this.selectedRowColumns = 0
-      this.selectedRowIndex = null
-      this.activeColumn = null
-      this.selectedBlock = null
-      this.selectRow(0)
+              color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
+            },
+          },
+        ],
+      });
+      this.selectRow(this.rows.length - 1);
+      this.saveHistory();
     },
-    addRow () {
-      this.rows.push({
-        isSelected: false,
-        bgColor: '#ffffff',
-        padding: { top: 10, right: 40, bottom: 10, left: 40 },
-        columns: [{
-          width: 100,
-          content: [],
-          backgroundColor: '#ffffff',
-          padding: { top: 0, right: 0, bottom: 0, left: 0 },
-          border: {
-            width: { top: 0, right: 0, bottom: 0, left: 0 },
-            color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
-          }
-        }]
-      })
-      this.selectRow(this.rows.length-1)
-      this.saveHistory()
-    },
-    handleDeleteRow (rowIndex) {
+    handleDeleteRow(rowIndex) {
       if (this.rows.length == 1) {
-        return
+        return;
       }
-      this.rows.splice(rowIndex, 1)
+      this.rows.splice(rowIndex, 1);
 
       // Reiniciar la selección de fila después de eliminarla
-      this.selectedRowIndex = null
-      this.selectedRowColumns = 0
-      this.activeColumn = null
-      this.saveHistory()
+      this.selectedRowIndex = null;
+      this.activeColumn = null;
+      this.saveHistory();
     },
     handleDuplicateRow(rowIndex) {
       // Clonar la fila original
@@ -511,10 +526,10 @@ export default {
       const clonedRow = JSON.parse(JSON.stringify(originalRow));
 
       // Recorrer cada columna y actualizar los `blockId` en el contenido
-      clonedRow.columns = clonedRow.columns.map(column => {
+      clonedRow.columns = clonedRow.columns.map((column) => {
         return {
           ...column,
-          content: column.content.map(block => {
+          content: column.content.map((block) => {
             // Generar un nuevo blockId para cada bloque
             const oldBlockId = block.blockId;
             const prefix = oldBlockId.split('-')[0]; // Obtener el prefijo (button, text, image, etc.)
@@ -523,347 +538,331 @@ export default {
             // Actualizar el blockId y devolver el bloque actualizado
             return {
               ...block,
-              blockId: newBlockId
+              blockId: newBlockId,
             };
-          })
+          }),
         };
       });
 
       // Insertar la fila clonada justo después de la fila original
       this.rows.splice(rowIndex + 1, 0, clonedRow);
-      this.saveHistory()
+      this.saveHistory();
     },
-    selectRow (index, event) {
-      const clickedElement = event?.target.closest('.block-wrapper') // Detecta si el clic fue en un bloque
+    selectRow(index, event) {
+      const clickedElement = event?.target.closest('.block-wrapper'); // Detecta si el clic fue en un bloque
 
       if (clickedElement) {
         // Si el clic fue en un bloque, no seleccionamos la fila
-        return
+        return;
       }
       // Deseleccionamos todas las filas primero
       this.rows.forEach((row, i) => {
-        row.isSelected = i === index
-      })
+        row.isSelected = i === index;
+      });
 
-      this.selectedBlockRowIndex = null
+      this.selectedBlockRowIndex = null;
 
       // Deseleccionar bloque
-      this.selectedBlock = null
-      this.selectedBlockId = null
+      this.selectedBlock = null;
+      this.selectedBlockId = null;
 
       // Actualizamos el índice de la fila seleccionada
-      this.selectedRowIndex = index
-      this.selectedRowColumns = this.rows[index].columns.length
-      this.selectColumn(0)
+      this.selectedRowIndex = index;
+      this.selectColumn(0);
     },
-    upRow (index) {
+    upRow(index) {
       if (index > 0) {
         const temp = this.rows[index - 1];
         this.rows[index - 1] = this.rows[index];
         this.rows[index] = temp;
-        this.selectRow(index-1)
+        this.selectRow(index - 1);
       }
     },
-    downRow (index) {
+    downRow(index) {
       if (index < this.rows.length - 1) {
         const temp = this.rows[index + 1];
         this.rows[index + 1] = this.rows[index];
         this.rows[index] = temp;
-        this.selectRow(index+1)
+        this.selectRow(index + 1);
       }
     },
-    selectColumn (index) {
-      this.activeColumn = index
-      this.columnBackgroundColor = this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor
+    selectColumn(index) {
+      this.activeColumn = index;
+      this.columnBackgroundColor = this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor;
     },
-    handleBlockSelection (blockId) {
+    handleBlockSelection(blockId) {
       // Iterar sobre filas y columnas para encontrar el bloque con el blockId
       for (let rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
-        const row = this.rows[rowIndex]
+        const row = this.rows[rowIndex];
         for (let columnIndex = 0; columnIndex < row.columns.length; columnIndex++) {
-          const column = row.columns[columnIndex]
-          const block = column.content.find(block => block.blockId === blockId)
+          const column = row.columns[columnIndex];
+          const block = column.content.find((block) => block.blockId === blockId);
 
           if (block) {
             // Bloque encontrado, guardar referencias
-            const isText = blockId.includes('text')
-            const isButton = blockId.includes('button')
-            this.selectedRowIndex = null
-            this.selectedBlockRowIndex = rowIndex
-            this.selectedColumnIndex = columnIndex
-            this.selectedBlockId = blockId
-            this.selectedBlock = block // Guarda el bloque para futuras modificaciones
+            const isText = blockId.includes('text');
+            const isButton = blockId.includes('button');
+            this.selectedRowIndex = null;
+            this.selectedBlockRowIndex = rowIndex;
+            this.selectedColumnIndex = columnIndex;
+            this.selectedBlockId = blockId;
+            this.selectedBlock = block; // Guarda el bloque para futuras modificaciones
             // Deseleccionamos todas las filas primero
             this.rows.forEach((row, i) => {
-              row.isSelected = false
-            })
+              row.isSelected = false;
+            });
 
-            this.activeColumn = null
+            this.activeColumn = null;
 
             if (isButton) {
-              this.buttonText = this.selectedBlock.properties.text // Asigna el texto del botón
-              this.buttonLink = this.selectedBlock.properties.href // Asigna el href del botón
+              this.buttonText = this.selectedBlock.properties.text; // Asigna el texto del botón
+              this.buttonLink = this.selectedBlock.properties.href; // Asigna el href del botón
             }
-            return
+            return;
           }
         }
       }
     },
 
-    // Need to know the row and column of the block selected without selecting the row
-    getRowAndColumnOfBlock (blockId) {
-      for (let rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
-        const columnIndex = this.rows[rowIndex].columns.findIndex(column => column.content.includes(blockId))
-        if (columnIndex !== -1) {
-          return { rowIndex, columnIndex }
+    handleDeleteBlock(blockId) {
+      const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
+      if (column) {
+        column.content = column.content.filter((block) => block.blockId !== blockId);
+      }
+      this.saveHistory('deleteBlock');
+    },
+    handleDuplicateBlock(blockId) {
+      const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
+      if (column) {
+        const blockToDuplicate = column.content.find((block) => block.blockId === blockId);
+        if (blockToDuplicate) {
+          const newBlock = JSON.parse(JSON.stringify(blockToDuplicate));
+
+          // Genera un nuevo ID único para el bloque duplicado
+          newBlock.blockId = `${newBlock.type}-${Date.now()}`;
+          const index = column.content.findIndex((block) => block.blockId === blockId);
+          column.content.splice(index + 1, 0, newBlock);
         }
       }
-      return { rowIndex: null, columnIndex: null }
+      this.saveHistory('duplicateBlock');
     },
-
-  handleDeleteBlock(blockId) {
-    const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
-    if (column) {
-      column.content = column.content.filter(block => block.blockId !== blockId);
-    }
-    this.saveHistory('deleteBlock')
-  },
-  handleDuplicateBlock(blockId) {
-    const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
-    if (column) {
-      const blockToDuplicate = column.content.find(block => block.blockId === blockId);
-      if (blockToDuplicate) {
-        const newBlock = JSON.parse(JSON.stringify(blockToDuplicate));
-      
-        // Genera un nuevo ID único para el bloque duplicado
-        newBlock.blockId = `${newBlock.type}-${Date.now()}`;
-        const index = column.content.findIndex(block => block.blockId === blockId);
-        column.content.splice(index + 1, 0, newBlock);
-      }
-    }
-    this.saveHistory('duplicateBlock')
-  },
-  getColumnFromBlockId(blockId) {
-    for (const row of this.rows) {
-      for (const column of row.columns) {
-        if (column.content.some(block => block.blockId === blockId)) {
-          return column;
+    getColumnFromBlockId(blockId) {
+      for (const row of this.rows) {
+        for (const column of row.columns) {
+          if (column.content.some((block) => block.blockId === blockId)) {
+            return column;
+          }
         }
       }
-    }
-    return null;
-  },
-
-    updateContainerPadding ({ side, value }) {
-      if (this.selectedBlock) {
-        this.selectedBlock.properties.containerPadding[side] = value
-      }
-      this.saveHistory('updateContainerPadding')
+      return null;
     },
 
-    updateButtonText (newText) {
+    updateContainerPadding({ side, value }) {
       if (this.selectedBlock) {
-        this.selectedBlock.properties.text = newText
+        this.selectedBlock.properties.containerPadding[side] = value;
       }
-      this.saveHistory()
+      this.saveHistory('updateContainerPadding');
     },
-    updateButtonHref (newHref) {
+
+    updateButtonText(newText) {
+      if (this.selectedBlock) {
+        this.selectedBlock.properties.text = newText;
+      }
+      this.saveHistory();
+    },
+    updateButtonHref(newHref) {
       if (this.selectedBlock && this.selectedBlock.type === 'button') {
-        this.selectedBlock.properties.href = newHref
-        this.saveHistory()
+        this.selectedBlock.properties.href = newHref;
+        this.saveHistory();
       }
     },
-    updateTextLineHeight (lh) {
+    updateTextLineHeight(lh) {
       if (this.selectedBlock && this.selectedBlock.type === 'text') {
-        this.selectedBlock.properties.lineHeight = lh
-        this.saveHistory()
+        this.selectedBlock.properties.lineHeight = lh;
+        this.saveHistory();
       }
     },
-    updateImageHref (newHref) {
+    updateImageHref(newHref) {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
-        this.selectedBlock.properties.href = newHref
-        this.saveHistory()
-      } else {
+        this.selectedBlock.properties.href = newHref;
+        this.saveHistory();
       }
     },
-    updateImageWidth (newWidth) {
+    updateImageWidth(newWidth) {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
-        this.selectedBlock.properties.width = newWidth
-        this.saveHistory()
-      } else {
+        this.selectedBlock.properties.width = newWidth;
+        this.saveHistory();
       }
     },
-    updateImageSrc (newSrc) {
+    updateImageSrc(newSrc) {
       if (this.selectedBlock && this.selectedBlock.type === 'image') {
-        this.selectedBlock.properties.src = newSrc
-        this.saveHistory()
-      }    
+        this.selectedBlock.properties.src = newSrc;
+        this.saveHistory();
+      }
     },
-    updateBlockAligment (alignment) {
-      this.saveHistory()
-      this.selectedBlock.properties.alignment = alignment
+    updateBlockAligment(alignment) {
+      this.saveHistory();
+      this.selectedBlock.properties.alignment = alignment;
     },
-    openModalEditText (block) {
-      this.modalEditText.originalText = block.properties?.text
-      this.modalEditText.shown = true
-      this.editingText = true
+    openModalEditText(block) {
+      this.modalEditText.originalText = block.properties?.text;
+      this.modalEditText.backgroundColor =
+        this.rows[this.selectedBlockRowIndex].columns[this.selectedColumnIndex].backgroundColor;
+      this.modalEditText.shown = true;
+      this.editingText = true;
     },
-    updateNewText (newText) {
-      this.modalEditText.newText = newText
+    updateNewText(newText) {
+      this.modalEditText.newText = newText;
     },
-    updateTextBlockContent () {
-      let newContent = this.modalEditText.newText
+    updateTextBlockContent() {
+      let newContent = this.modalEditText.newText;
 
       // Ajusta el contenido de <p> para que todos tengan margin: 0
       const adjustedContent = newContent.replace(/<p(\s+[^>]*)?>/g, (match, attrs) => {
         if (attrs && attrs.includes('style=')) {
-            // Si ya existe un estilo, añade margin: 0 y verifica text-align
-            return match.replace(/style="([^"]*)"/, (styleMatch, styleContent) => {
-                const hasTextAlign = /text-align\s*:\s*[^;]+/.test(styleContent);
-                const updatedStyle = `${styleContent}; margin: 0;${hasTextAlign ? '' : ' text-align: left;'}`;
-                return `style="${updatedStyle.trim()}"`;
-            });
+          // Si ya existe un estilo, añade margin: 0 y verifica text-align
+          return match.replace(/style="([^"]*)"/, (styleMatch, styleContent) => {
+            const hasTextAlign = /text-align\s*:\s*[^;]+/.test(styleContent);
+            const updatedStyle = `${styleContent}; margin: 0;${hasTextAlign ? '' : ' text-align: left;'}`;
+            return `style="${updatedStyle.trim()}"`;
+          });
         } else {
-            // Si no tiene estilo, añade uno con margin: 0 y text-align: left
-            return `<p style="margin: 0; text-align: left;"${attrs || ''}>`;
+          // Si no tiene estilo, añade uno con margin: 0 y text-align: left
+          return `<p style="margin: 0; text-align: left;"${attrs || ''}>`;
         }
       });
 
       // Ajustar imágenes dentro de <figure>
-        const adjustedWithFigureStyles = adjustedContent.replace(/<figure([^>]*)style="([^"]*)"[^>]*>\s*<img([^>]*)style="([^"]*)"/g, (match, figureAttrs, figureStyle, imgAttrs, imgStyle) => {
-        let updatedStyle = imgStyle;
+      const adjustedWithFigureStyles = adjustedContent.replace(
+        /<figure([^>]*)style="([^"]*)"[^>]*>\s*<img([^>]*)style="([^"]*)"/g,
+        (match, figureAttrs, figureStyle, imgAttrs, imgStyle) => {
+          let updatedStyle = imgStyle;
 
-        // Extraer el width del figure
-        const figureWidthMatch = figureStyle.match(/width\s*:\s*([^;]+);?/);
-        const figureWidth = figureWidthMatch ? figureWidthMatch[1].trim() : null;
+          // Extraer el width del figure
+          const figureWidthMatch = figureStyle.match(/width\s*:\s*([^;]+);?/);
+          const figureWidth = figureWidthMatch ? figureWidthMatch[1].trim() : null;
 
-        // Asignar el width del figure al img
-        if (figureWidth && !/width\s*:\s*[^;]+;/.test(imgStyle)) {
-          updatedStyle += ` width: ${figureWidth};`;
+          // Asignar el width del figure al img
+          if (figureWidth && !/width\s*:\s*[^;]+;/.test(imgStyle)) {
+            updatedStyle += ` width: ${figureWidth};`;
+          }
+
+          // Asegurar height: auto;
+          if (!/height\s*:\s*auto;/.test(updatedStyle)) {
+            updatedStyle += ' height: auto;';
+          }
+
+          // Mantener el <figure> intacto
+          return `<figure${figureAttrs} style="${figureStyle}"><img${imgAttrs}style="${updatedStyle}"`;
         }
-
-        // Asegurar height: auto;
-        if (!/height\s*:\s*auto;/.test(updatedStyle)) {
-          updatedStyle += ' height: auto;';
-        }
-
-        // Mantener el <figure> intacto
-        return `<figure${figureAttrs} style="${figureStyle}"><img${imgAttrs}style="${updatedStyle}"`;
-      });
+      );
 
       // Asegurar de que las imágenes tienen height: auto en su estilo
-      const adjustedWithImageStyles = adjustedWithFigureStyles.replace(/<img([^>]*)style="([^"]*)"([^>]*)>/g, (match, attrsBeforeStyle, style, attrsAfterStyle) => {
-      let updatedStyle = style;
+      const adjustedWithImageStyles = adjustedWithFigureStyles.replace(
+        /<img([^>]*)style="([^"]*)"([^>]*)>/g,
+        (match, attrsBeforeStyle, style, attrsAfterStyle) => {
+          let updatedStyle = style;
 
-      if (!/height\s*:\s*auto;/.test(style)) {
-        updatedStyle = style.replace(/(width\s*:[^;]+;?)/, '$1 height:auto;');
-      }
+          if (!/height\s*:\s*auto;/.test(style)) {
+            updatedStyle = style.replace(/(width\s*:[^;]+;?)/, '$1 height:auto;');
+          }
 
-      const styleWidthMatch = style.match(/width\s*:\s*([\d.]+)px/);
-      const styleWidthValue = styleWidthMatch ? styleWidthMatch[1] : null;
+          const styleWidthMatch = style.match(/width\s*:\s*([\d.]+)px/);
+          const styleWidthValue = styleWidthMatch ? styleWidthMatch[1] : null;
 
-      const attrsWithoutHeight = attrsAfterStyle.replace(/\s*height="[^"]*"/, '');
+          const attrsWithoutHeight = attrsAfterStyle.replace(/\s*height="[^"]*"/, '');
 
-      if (styleWidthValue) {
-        if (/width="[^"]*"/.test(match)) {
-          // Si ya existe width, reemplazarlo
-          return `<img${attrsBeforeStyle}style="${updatedStyle}"${attrsWithoutHeight.replace(/width="[^"]*"/, `width="${styleWidthValue}"`)}>`;
-        } else {
-          // Si no existe, añadir el atributo width
-          return `<img${attrsBeforeStyle}style="${updatedStyle}" width="${styleWidthValue}"${attrsWithoutHeight}>`;
+          if (styleWidthValue) {
+            if (/width="[^"]*"/.test(match)) {
+              // Si ya existe width, reemplazarlo
+              return `<img${attrsBeforeStyle}style="${updatedStyle}"${attrsWithoutHeight.replace(/width="[^"]*"/, `width="${styleWidthValue}"`)}>`;
+            } else {
+              // Si no existe, añadir el atributo width
+              return `<img${attrsBeforeStyle}style="${updatedStyle}" width="${styleWidthValue}"${attrsWithoutHeight}>`;
+            }
+          }
+
+          return `<img${attrsBeforeStyle}style="${updatedStyle}"${attrsWithoutHeight}>`;
         }
-      }
-
-      return `<img${attrsBeforeStyle}style="${updatedStyle}"${attrsWithoutHeight}>`;
-    });
+      );
 
       if (this.selectedBlock) {
-        this.selectedBlock.properties.text = adjustedWithImageStyles
-        this.saveHistory('updateTextBlockContent')
+        this.selectedBlock.properties.text = adjustedWithImageStyles;
+        this.saveHistory();
       }
-      this.modalEditText.close()
+      this.modalEditText.close();
     },
-    openPickerImage () {
-      this.$refs.imagePropertiesPanel.triggerFileInput()
-    },
-    // Métodos adicionales para encontrar la fila y columna de un bloque dado su blockId
-    getRowIndexFromBlockId (blockId) {
-      for (let i = 0; i < this.rows.length; i++) {
-        if (this.rows[i].columns.some(column => column.content.includes(blockId))) {
-          return i
-        }
-      }
-      return null
+    openPickerImage() {
+      this.$refs.imagePropertiesPanel.triggerFileInput();
     },
     // Updates rows properties methods
-    updateRowBackgroundColor (newColor) {
+    updateRowBackgroundColor(newColor) {
       if (this.selectedRowIndex !== null) {
-        this.rows[this.selectedRowIndex].bgColor = newColor
-        this.saveHistory()
+        this.rows[this.selectedRowIndex].bgColor = newColor;
+        this.saveHistory();
       }
     },
-    updateRowPadding ({ side, value }) {
+    updateRowPadding({ side, value }) {
       if (this.selectedRowIndex !== null) {
-        this.rows[this.selectedRowIndex].padding[side] = value
-        this.saveHistory()
+        this.rows[this.selectedRowIndex].padding[side] = value;
+        this.saveHistory();
       }
     },
     // Updates column properties methods
-    updateColumnBackgroundColor (newColor) {
+    updateColumnBackgroundColor(newColor) {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
-        this.columnBackgroundColor = newColor
-        this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = newColor
-        this.saveHistory('updateColumnBorderColor')
+        this.columnBackgroundColor = newColor;
+        this.rows[this.selectedRowIndex].columns[this.activeColumn].backgroundColor = newColor;
+        this.saveHistory();
       }
     },
 
-    updateColumnPadding ({ side, value }) {
+    updateColumnPadding({ side, value }) {
       if (this.selectedRowIndex !== null && this.activeColumn !== null) {
-        this.rows[this.selectedRowIndex].columns[this.activeColumn].padding[side] = value
-        this.saveHistory('updateColumnPadding')
+        this.rows[this.selectedRowIndex].columns[this.activeColumn].padding[side] = value;
+        this.saveHistory();
       }
     },
-    updateColumnBorderWidth ({ side, value }) {
-      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.width[side] = value
-      this.saveHistory('updateColumnBorderWidht')
+    updateColumnBorderWidth({ side, value }) {
+      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.width[side] = value;
+      this.saveHistory();
     },
-    updateColumnBorderColor ({ side, value }) {
-      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.color[side] = value
-      this.saveHistory('updateColumnBorderColor')
+    updateColumnBorderColor({ side, value }) {
+      this.rows[this.selectedRowIndex].columns[this.activeColumn].border.color[side] = value;
+      this.saveHistory();
     },
-    upBlock (index) {
-      const content = this.rows[this.selectedBlockRowIndex]?.columns[this.selectedColumnIndex].content
+    upBlock(index) {
+      const content = this.rows[this.selectedBlockRowIndex]?.columns[this.selectedColumnIndex].content;
       const temp = content[index];
       content.splice(index, 1);
       content.splice(index - 1, 0, temp);
-      this.saveHistory('upBlock')
+      this.saveHistory();
     },
-    downBlock (index) {
-      const content = this.rows[this.selectedBlockRowIndex]?.columns[this.selectedColumnIndex].content
+    downBlock(index) {
+      const content = this.rows[this.selectedBlockRowIndex]?.columns[this.selectedColumnIndex].content;
       const temp = content[index];
       content.splice(index, 1);
       content.splice(index + 1, 0, temp);
-      this.saveHistory('downBlock')
+      this.saveHistory();
     },
 
-    // Método para obtener la clase CSS correcta según el número de columnas y proporciones
-    getColumnClass (numColumns, firstColumnWidth) {
+    getColumnClass(numColumns, firstColumnWidth) {
       if (numColumns === 1) {
-        return 'single-column'
+        return 'single-column';
       } else if (numColumns === 2) {
         if (firstColumnWidth && firstColumnWidth === 67) {
-          return 'two-columns two-columns-67-33'
+          return 'two-columns two-columns-67-33';
         } else if (firstColumnWidth && firstColumnWidth === 33) {
-          return 'two-columns two-columns-33-67'
+          return 'two-columns two-columns-33-67';
         } else {
-          return 'two-columns'
+          return 'two-columns';
         }
       } else if (numColumns === 3) {
-        return 'three-columns'
+        return 'three-columns';
       } else if (numColumns === 4) {
-        return 'four-columns'
+        return 'four-columns';
       }
-      return '' // Clase vacía si no se cumple ninguna condición
+      return '';
     },
     // Método para configurar el número de columnas y sus proporciones
     configureColumns(numColumns, proportions = []) {
@@ -877,7 +876,7 @@ export default {
         return currentColumns[i]
           ? {
               ...currentColumns[i], // Mantener la configuración y contenido actuales
-              width: proportions[i] || (100 / numColumns) // Ajustar el ancho según proporciones
+              width: proportions[i] || 100 / numColumns, // Ajustar el ancho según proporciones
             }
           : {
               content: [], // Nueva columna sin contenido
@@ -885,9 +884,9 @@ export default {
               padding: { top: 0, right: 0, bottom: 0, left: 0 },
               border: {
                 width: { top: 0, right: 0, bottom: 0, left: 0 },
-                color: { top: '#000', right: '#000', bottom: '#000', left: '#000' }
+                color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
               },
-              width: proportions[i] || (100 / numColumns)
+              width: proportions[i] || 100 / numColumns,
             };
       });
 
@@ -895,15 +894,14 @@ export default {
       this.rows[this.selectedRowIndex].columns = newColumns;
 
       // Actualizar las variables de estado
-      this.selectedRowColumns = numColumns;
       this.activeColumn = 0;
-      this.saveHistory('configure columns')
+      this.saveHistory('configure columns');
     },
 
-    saveHistory(method) {
+    saveHistory() {
       // Si hay estados futuros, los descartamos (no se pueden "rehacer" tras un nuevo cambio)
       this.history.future = [];
-      
+
       // Guarda el estado actual en el pasado
       if (this.history.present !== null) {
         this.history.past.push(JSON.parse(JSON.stringify(this.history.present)));
@@ -928,8 +926,8 @@ export default {
         // Restaurar el estado de rows
         this.rows = JSON.parse(JSON.stringify(this.history.present));
 
-        this.selectedBlock = null
-        this.selectedBlockId = null
+        this.selectedBlock = null;
+        this.selectedBlockId = null;
       }
     },
     redo() {
@@ -943,8 +941,8 @@ export default {
         // Restaurar el estado de rows
         this.rows = JSON.parse(JSON.stringify(this.history.present));
 
-        this.selectedBlock = null
-        this.selectedBlockId = null
+        this.selectedBlock = null;
+        this.selectedBlockId = null;
       }
     },
 
@@ -955,23 +953,20 @@ export default {
       const containerWidth = 600;
 
       // Convertir el ancho relativo (%) de la columna a píxeles
-      let columnWidth
+      let columnWidth;
       if (typeof column.width === 'number') {
-        columnWidth = `${column.width}%`
-        columnWidth = parseFloat(columnWidth.replace('%', '')) / 100 * containerWidth;
+        columnWidth = `${column.width}%`;
+        columnWidth = (parseFloat(columnWidth.replace('%', '')) / 100) * containerWidth;
       } else {
-        columnWidth = parseFloat(column.width.replace('%', '')) / 100 * containerWidth;
+        columnWidth = (parseFloat(column.width.replace('%', '')) / 100) * containerWidth;
       }
-
-      // Restar paddings de la columna
-      // Review tomar en cuenta bordes
       const totalPadding = column.padding.left + column.padding.right;
       const columnWidthWithoutPadding = columnWidth - totalPadding;
 
       return columnWidthWithoutPadding;
     },
 
-    exportMJMLToHTML () {
+    exportMJMLToHTML() {
       const mjmlContent = this.generateMJML();
       const { html } = mjml2html(mjmlContent, { beautify: true, minify: false });
       const processedHTML = this.postProcessHTML(html);
@@ -1001,13 +996,11 @@ export default {
           >
         `;
 
-        const onlyOneColumn = row.columns.length === 1
+        const onlyOneColumn = row.columns.length === 1;
 
         row.columns.forEach((column, columnIndex) => {
           // Verificar si todas las columnas tienen un solo bloque y es de tipo 'button'
-          const isButtonRow = row.columns.every(col => 
-            col.content.length === 1 && col.content[0].type === 'button'
-          );
+          const isButtonRow = row.columns.every((col) => col.content.length === 1 && col.content[0].type === 'button');
 
           // Añadir la clase CSS si cumple la condición
           const cssClass = isButtonRow || onlyOneColumn ? 'not-table-cell' : '';
@@ -1024,7 +1017,7 @@ export default {
             >
           `;
 
-          column.content.forEach(block => {
+          column.content.forEach((block) => {
             if (block.type === 'button') {
               const hrefAttribute = block.properties.href ? `href="${block.properties.href}"` : '';
               mjmlContent += `
@@ -1054,8 +1047,12 @@ export default {
               `;
             } else if (block.type === 'image') {
               const columnWidth = this.getColumnWidthInPixels(rowIndex, columnIndex);
-              const imagePadding = Number(block.properties.containerPadding.left) + Number(block.properties.containerPadding.right);
-              const imageWidthPx = Math.max(0, Math.round((block.properties.width / 100 * (columnWidth - imagePadding))));
+              const imagePadding =
+                Number(block.properties.containerPadding.left) + Number(block.properties.containerPadding.right);
+              const imageWidthPx = Math.max(
+                0,
+                Math.round((block.properties.width / 100) * (columnWidth - imagePadding))
+              );
               const hrefAttribute = block.properties.href ? `href="${block.properties.href}"` : '';
               mjmlContent += `
                 <mj-image
@@ -1094,7 +1091,7 @@ export default {
       const doc = parser.parseFromString(html, 'text/html');
       // Asegurar display: table-cell y height: 100%
       const columns = doc.querySelectorAll('td');
-      columns.forEach(column => {
+      columns.forEach((column) => {
         column.style.height = '100%';
         column.style.display = 'table-cell';
       });
@@ -1102,7 +1099,7 @@ export default {
       // Selecciona todos los elementos con clase que comienza con "mj-column-per"
       const mjColumns = doc.querySelectorAll('[class^="mj-column-per"]:not(.not-table-cell)');
 
-      mjColumns.forEach(column => {
+      mjColumns.forEach((column) => {
         // Añadir clase "desktop-table-cell" para manejar con media queries
         column.classList.add('desktop-table-cell');
 
@@ -1122,10 +1119,10 @@ export default {
         }
       });
       // Serializar el documento completo
-      
-      mjColumns.forEach(column => {
+
+      mjColumns.forEach((column) => {
         // Extraer el número xx de la clase mj-column-per-xx
-        const className = Array.from(column.classList).find(cls => cls.startsWith('mj-column-per-'));
+        const className = Array.from(column.classList).find((cls) => cls.startsWith('mj-column-per-'));
         if (className) {
           const percentage = className.split('-').pop();
           const existingStyle = column.getAttribute('style') || '';
@@ -1161,55 +1158,34 @@ export default {
         }
       `;
 
-  const styleElement = doc.createElement('style');
-  styleElement.textContent = styleContent;
+      const styleElement = doc.createElement('style');
+      styleElement.textContent = styleContent;
 
-  // Insertar el <style> en el <head> del documento
-  const head = doc.querySelector('head') || doc.createElement('head');
-  head.appendChild(styleElement);
+      // Insertar el <style> en el <head> del documento
+      const head = doc.querySelector('head') || doc.createElement('head');
+      head.appendChild(styleElement);
       return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
     },
-    exportJson () {
-      const templateData = JSON.stringify(this.rows)
-      return templateData
-    },
-    loadTemplate (template) {
-      this.rows = [...template]
-    },
 
-    generateButtonHtml (block) {
-      const alignmentStyle = block.properties.alignment ? `text-align: ${block.properties.alignment};` : ''
-      const hrefAttribute = block.properties.href ? `href="${block.properties.href}"` : '';
-
-      return `
-        <div style="${alignmentStyle}">
-          <a ${hrefAttribute} style="display: inline-block; background-color: ${block.properties.backgroundColor}; color: ${block.properties.color}; padding: ${block.properties.padding}; border-radius: ${block.properties.borderRadius}; text-decoration: none;">
-            ${block.properties.text}
-          </a>
-        </div>
-      `
+    showPreview() {
+      this.htmlForPreview = this.exportMJMLToHTML();
+      this.showPreviewContent = true;
     },
-
-    showPreview () {
-      this.htmlForPreview = this.exportMJMLToHTML()
-      this.showPreviewContent = true
+    closePreview() {
+      this.htmlForPreview = '';
+      this.showPreviewContent = false;
     },
-    closePreview () {
-      this.htmlForPreview = ''
-      this.showPreviewContent = false
-    },
-  }
-}
+  },
+};
 </script>
 
 <style scoped lang="scss">
-  @import '@/assets/scss/_variables.scss';
-  @import '@/assets/scss/_mixins.scss';
+@import '@/assets/scss/_variables.scss';
+@import '@/assets/scss/_mixins.scss';
 .wrapper {
   display: grid;
   grid-template-columns: 4fr 2fr;
 }
-/* Estilos para el lienzo */
 
 .editor-layout {
   height: 100vh;
@@ -1227,7 +1203,7 @@ export default {
 }
 
 .row {
-  position: relative; /* Para posicionar el indicador de arrastre */
+  position: relative;
   padding: 0 20px;
   text-align: center;
   cursor: pointer;
@@ -1235,40 +1211,16 @@ export default {
 }
 
 .row-selected {
-  outline: 2px solid #1464A5;
+  outline: 2px solid #1464a5;
   outline-offset: -1px;
   z-index: 1;
 }
 
-/* Indicador de arrastre */
-.drag-handle {
-  position: absolute;
-  top: 50%;
-  right: 0px;
-  transform: translateY(-50%);
-  background-color: $bbva-medium-light-blue;
-  color: #fff;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-top-left-radius: 50%;
-  border-bottom-left-radius: 50%;
-  cursor:grab;
-  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
-}
-
-.drag-icon {
-  font-size: 20px;
-}
-
-/* Estilo para el recuadro de acciones */
 .row-action-panel {
   z-index: 4;
   position: absolute;
   top: 100%;
-  right: 0px; /* Ajusta la posición del recuadro según sea necesario */
+  right: 0px;
   display: flex;
   gap: 8px;
   padding: 4px;
@@ -1278,11 +1230,10 @@ export default {
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Estilo para los iconos dentro del recuadro */
 .row-action-icon {
   font-size: 22px;
   cursor: pointer;
-  color: $bbva-core-blue;
+  color: $core-blue;
 }
 
 .row p {
@@ -1401,5 +1352,4 @@ export default {
 .four-columns .column {
   width: 25%;
 }
-
 </style>

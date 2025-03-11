@@ -1,10 +1,10 @@
 /* global styles */
-@import "_variables.scss"; 
-@import "_button.scss"; 
-@import "_utilities.scss";
-@import "_text.scss";
-@import "_mixins.scss";
-@import "_customEditor";
+@import '_variables.scss';
+@import '_button.scss';
+@import '_utilities.scss';
+@import '_text.scss';
+@import '_mixins.scss';
+@import '_customEditor';
 
 body {
   margin: 0;
@@ -16,7 +16,6 @@ body {
   min-width: 320px;
 }
 
-
 // .gjs-rte-toolbar {
 //   top: -112px !important;
 //   z-index: 9999 !important;
@@ -26,7 +25,7 @@ p {
   margin: 0;
 }
 .bg-app {
-  background-color: #F4F4F4;
+  background-color: #f4f4f4;
 }
 
 .row {
@@ -45,15 +44,11 @@ p {
 }
 
 .cke_notification_warning {
-  display: none; 
+  display: none;
 }
 
 .line {
   border-top: 1px solid #979797;
-
-  &--blue {
-    border-top: 1px solid $bbva-aqua-light;
-  }
 }
 
 a {
@@ -65,18 +60,18 @@ a {
   }
 }
 
-.common-modal{
-  background-color: #FFFFFF;
+.common-modal {
+  background-color: #ffffff;
   padding: 32px 40px 32px 40px;
   border-radius: 0px !important;
   width: 920px !important;
-  @include at-least-1280{
-      width: 752px !important;
+  @include at-least-1280 {
+    width: 752px !important;
   }
 }
 
-.big-modal{
-  background-color: #FFFFFF;
+.big-modal {
+  background-color: #ffffff;
   padding: 32px 40px 32px 40px;
   border-radius: 0px !important;
   width: 80% !important;
