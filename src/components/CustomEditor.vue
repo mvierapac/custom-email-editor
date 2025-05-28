@@ -267,6 +267,15 @@ import {
 } from '_editor/generateCustomRowsFunctions.js';
 
 import { generateMJML, postProcessHTML } from '_utils/exportHtmlFunctions.js';
+import {
+  moveItem,
+  deleteBlockFromContent,
+  duplicateBlockInContent,
+  deleteRowAtIndex,
+  duplicateRowAtIndex,
+} from '@/utils/editorArrayUtils';
+
+import { saveHistoryState, undoState, redoState } from '@/utils/historyManager';
 
 export default {
   mounted() {
@@ -305,9 +314,9 @@ export default {
       showCkeditor: false,
       selectedColumnIndex: null,
       selectedBlockId: null,
-      selectedRowIndex: null, // Almacena el índice de la fila seleccionada
+      selectedRowIndex: null,
       selectedBlockRowIndex: null,
-      activeColumn: null, // Columna actualmente seleccionada en el panel
+      activeColumn: null,
       dragItemType: null,
       colorDraggedBtn: null,
       selectedBlock: null,
@@ -512,42 +521,16 @@ export default {
       this.saveHistory();
     },
     handleDeleteRow(rowIndex) {
-      if (this.rows.length == 1) {
-        return;
+      const updatedRows = deleteRowAtIndex(this.rows, rowIndex);
+      if (updatedRows !== this.rows) {
+        this.rows = updatedRows;
+        this.selectedRowIndex = null;
+        this.activeColumn = null;
+        this.saveHistory();
       }
-      this.rows.splice(rowIndex, 1);
-
-      // Reiniciar la selección de fila después de eliminarla
-      this.selectedRowIndex = null;
-      this.activeColumn = null;
-      this.saveHistory();
     },
     handleDuplicateRow(rowIndex) {
-      // Clonar la fila original
-      const originalRow = this.rows[rowIndex];
-      const clonedRow = JSON.parse(JSON.stringify(originalRow));
-
-      // Recorrer cada columna y actualizar los `blockId` en el contenido
-      clonedRow.columns = clonedRow.columns.map((column) => {
-        return {
-          ...column,
-          content: column.content.map((block) => {
-            // Generar un nuevo blockId para cada bloque
-            const oldBlockId = block.blockId;
-            const prefix = oldBlockId.split('-')[0]; // Obtener el prefijo (button, text, image, etc.)
-            const newBlockId = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`; // Generar un nuevo ID único
-
-            // Actualizar el blockId y devolver el bloque actualizado
-            return {
-              ...block,
-              blockId: newBlockId,
-            };
-          }),
-        };
-      });
-
-      // Insertar la fila clonada justo después de la fila original
-      this.rows.splice(rowIndex + 1, 0, clonedRow);
+      this.rows = duplicateRowAtIndex(this.rows, rowIndex);
       this.saveHistory();
     },
     selectRow(index, event) {
@@ -573,20 +556,14 @@ export default {
       this.selectColumn(0);
     },
     upRow(index) {
-      if (index > 0) {
-        const temp = this.rows[index - 1];
-        this.rows[index - 1] = this.rows[index];
-        this.rows[index] = temp;
-        this.selectRow(index - 1);
-      }
+      const newRows = moveItem(this.rows, index, index - 1);
+      this.rows = newRows;
+      this.selectRow(index - 1);
     },
     downRow(index) {
-      if (index < this.rows.length - 1) {
-        const temp = this.rows[index + 1];
-        this.rows[index + 1] = this.rows[index];
-        this.rows[index] = temp;
-        this.selectRow(index + 1);
-      }
+      const newRows = moveItem(this.rows, index, index + 1);
+      this.rows = newRows;
+      this.selectRow(index + 1);
     },
     selectColumn(index) {
       this.activeColumn = index;
@@ -627,27 +604,21 @@ export default {
     },
 
     handleDeleteBlock(blockId) {
-      const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
+      const column = this.getColumnFromBlockId(blockId);
       if (column) {
-        column.content = column.content.filter((block) => block.blockId !== blockId);
+        column.content = deleteBlockFromContent(column.content, blockId);
       }
-      this.saveHistory('deleteBlock');
+      this.saveHistory();
     },
-    handleDuplicateBlock(blockId) {
-      const column = this.getColumnFromBlockId(blockId); // Función para encontrar la columna
-      if (column) {
-        const blockToDuplicate = column.content.find((block) => block.blockId === blockId);
-        if (blockToDuplicate) {
-          const newBlock = JSON.parse(JSON.stringify(blockToDuplicate));
 
-          // Genera un nuevo ID único para el bloque duplicado
-          newBlock.blockId = `${newBlock.type}-${Date.now()}`;
-          const index = column.content.findIndex((block) => block.blockId === blockId);
-          column.content.splice(index + 1, 0, newBlock);
-        }
+    handleDuplicateBlock(blockId) {
+      const column = this.getColumnFromBlockId(blockId);
+      if (column) {
+        column.content = duplicateBlockInContent(column.content, blockId);
       }
-      this.saveHistory('duplicateBlock');
+      this.saveHistory();
     },
+
     getColumnFromBlockId(blockId) {
       for (const row of this.rows) {
         for (const column of row.columns) {
@@ -835,16 +806,20 @@ export default {
     },
     upBlock(index) {
       const content = this.rows[this.selectedBlockRowIndex]?.columns[this.selectedColumnIndex].content;
-      const temp = content[index];
-      content.splice(index, 1);
-      content.splice(index - 1, 0, temp);
+      if (!content) return;
+
+      const newContent = moveItem(content, index, index - 1);
+      this.rows[this.selectedBlockRowIndex].columns[this.selectedColumnIndex].content = newContent;
+
       this.saveHistory();
     },
     downBlock(index) {
       const content = this.rows[this.selectedBlockRowIndex]?.columns[this.selectedColumnIndex].content;
-      const temp = content[index];
-      content.splice(index, 1);
-      content.splice(index + 1, 0, temp);
+      if (!content) return;
+
+      const newContent = moveItem(content, index, index + 1);
+      this.rows[this.selectedBlockRowIndex].columns[this.selectedColumnIndex].content = newContent;
+
       this.saveHistory();
     },
 
@@ -901,48 +876,20 @@ export default {
     },
 
     saveHistory() {
-      // Si hay estados futuros, los descartamos (no se pueden "rehacer" tras un nuevo cambio)
-      this.history.future = [];
-
-      // Guarda el estado actual en el pasado
-      if (this.history.present !== null) {
-        this.history.past.push(JSON.parse(JSON.stringify(this.history.present)));
-      }
-
-      // Limita el historial a 20 versiones
-      if (this.history.past.length > 20) {
-        this.history.past.shift();
-      }
-
-      // Actualiza el estado presente
-      this.history.present = JSON.parse(JSON.stringify(this.rows));
+      saveHistoryState(this.history, this.rows);
     },
     undo() {
-      if (this.history.past.length > 0) {
-        // Mover el estado actual al futuro
-        this.history.future.unshift(JSON.parse(JSON.stringify(this.history.present)));
-
-        // Recuperar el último estado del pasado
-        this.history.present = this.history.past.pop();
-
-        // Restaurar el estado de rows
-        this.rows = JSON.parse(JSON.stringify(this.history.present));
-
+      const previous = undoState(this.history);
+      if (previous) {
+        this.rows = previous;
         this.selectedBlock = null;
         this.selectedBlockId = null;
       }
     },
     redo() {
-      if (this.history.future.length > 0) {
-        // Mover el estado actual al pasado
-        this.history.past.push(JSON.parse(JSON.stringify(this.history.present)));
-
-        // Recuperar el primer estado del futuro
-        this.history.present = this.history.future.shift();
-
-        // Restaurar el estado de rows
-        this.rows = JSON.parse(JSON.stringify(this.history.present));
-
+      const next = redoState(this.history);
+      if (next) {
+        this.rows = next;
         this.selectedBlock = null;
         this.selectedBlockId = null;
       }
