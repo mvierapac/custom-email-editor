@@ -1,3 +1,37 @@
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+
+const props = defineProps({
+  emptyRowSelected: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+const emit = defineEmits(['drag-start']);
+
+const expanded = ref(true);
+
+onMounted(() => {
+  expanded.value = props.emptyRowSelected;
+});
+
+watch(
+  () => props.emptyRowSelected,
+  (newVal) => {
+    expanded.value = newVal;
+  }
+);
+
+const handleExpandBtn = () => {
+  expanded.value = !expanded.value;
+};
+
+const startDrag = (type, btnColor = null) => {
+  emit('drag-start', type, btnColor);
+};
+</script>
+
 <template>
   <div>
     <button class="collapsable-panel-button" @click="handleExpandBtn">
@@ -5,6 +39,7 @@
       <i class="mdi mdi-chevron-up" v-if="expanded"></i>
       <i class="mdi mdi-chevron-down" v-else></i>
     </button>
+
     <div class="tool-panel lateral-panel-section-padding" v-if="expanded">
       <div>
         <div class="tool-panel__group">
@@ -40,40 +75,6 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    emptyRowSelected: {
-      type: Boolean,
-      default: true,
-    },
-  },
-
-  mounted() {
-    this.expanded = this.emptyRowSelected;
-  },
-
-  watch: {
-    emptyRowSelected(newVal) {
-      this.expanded = newVal;
-    },
-  },
-  data() {
-    return {
-      expanded: true,
-    };
-  },
-  methods: {
-    handleExpandBtn() {
-      this.expanded = !this.expanded;
-    },
-    startDrag(type, btnColor = null) {
-      this.$emit('drag-start', type, btnColor);
-    },
-  },
-};
-</script>
-
 <style lang="scss" scoped>
 .tool-panel {
   margin-top: 16px;
@@ -83,12 +84,14 @@ export default {
   gap: 8px;
   flex-wrap: wrap;
   border-bottom: 1px solid #ddd;
+
   &__group {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
   }
 }
+
 .draggable-item {
   padding: 10px;
   background-color: #f0f0f0;
@@ -152,16 +155,17 @@ export default {
   justify-content: space-between;
   width: 100%;
   padding: 12px;
-  justify-content: space-between;
   align-items: center;
   font-size: 14px;
   font-weight: 600;
   border-bottom: 1px solid #ddd;
   transition: background-color 0.3s ease;
 }
+
 .collapsable-panel-button i {
   font-size: 18px;
 }
+
 .collapsable-panel-button:hover {
   background-color: rgb(244, 244, 244);
 }
