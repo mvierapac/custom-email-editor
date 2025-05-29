@@ -40,7 +40,7 @@ export function generateTextBlock() {
   };
 }
 
-export function generateButtonBlock(bgColor) {
+export function generateButtonBlock() {
   const timestamp = Date.now();
   return {
     blockId: `button-${timestamp}`,
@@ -48,7 +48,7 @@ export function generateButtonBlock(bgColor) {
     properties: {
       text: 'Botón',
       href: '',
-      backgroundColor: bgColor,
+      backgroundColor: '#1A73E8',
       color: '#FFFFFF',
       padding: '12px 32px',
       borderRadius: '1px',

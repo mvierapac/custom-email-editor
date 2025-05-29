@@ -1,20 +1,102 @@
+<script setup>
+import { reactive, watch, toRefs } from 'vue';
+
+const props = defineProps({
+  buttonLink: { type: String, required: true },
+  buttonText: { type: String, required: true },
+  containerPadding: { type: Object, required: true },
+  alignment: { type: String, required: true },
+});
+
+const emit = defineEmits([
+  'update-button-href',
+  'update-button-text',
+  'update-button-alignment',
+  'update-container-padding',
+]);
+
+const localState = reactive({
+  localButtonLink: props.buttonLink,
+  localButtonText: props.buttonText,
+  localContainerPadding: { ...props.containerPadding },
+});
+
+watch(
+  () => props.buttonLink,
+  (newVal) => {
+    localState.localButtonLink = newVal;
+  }
+);
+
+watch(
+  () => props.buttonText,
+  (newVal) => {
+    localState.localButtonText = newVal;
+  }
+);
+
+watch(
+  () => props.containerPadding,
+  (newPadding) => {
+    localState.localContainerPadding = { ...newPadding };
+  }
+);
+
+const isSelectedAlignment = (align) => props.alignment === align;
+
+const updateHref = () => {
+  emit('update-button-href', localState.localButtonLink);
+};
+
+const updateText = () => {
+  emit('update-button-text', localState.localButtonText);
+};
+
+const updateAlignment = (align) => {
+  emit('update-button-alignment', align);
+};
+
+const updateLocalContainerPadding = (side) => {
+  emit('update-container-padding', {
+    side: side.toLowerCase(),
+    value: localState.localContainerPadding[side.toLowerCase()],
+  });
+};
+
+const increaseLocalPadding = (side) => {
+  localState.localContainerPadding[side.toLowerCase()]++;
+  updateLocalContainerPadding(side);
+};
+
+const decreaseLocalPadding = (side) => {
+  const key = side.toLowerCase();
+  if (localState.localContainerPadding[key] > 0) {
+    localState.localContainerPadding[key]--;
+    updateLocalContainerPadding(side);
+  }
+};
+</script>
+
 <template>
   <div class="properties-panel lateral-panel-section-padding sticky-panel">
     <p class="properties-title">{{ $t('EDITOR.BUTTON_PROPERTIES') }}</p>
+
     <div class="input-container">
       <label for="url-input">{{ $t('EDITOR.URL') }}</label>
       <input
         type="text"
         id="url-input"
-        v-model="localButtonLink"
+        v-model="localState.localButtonLink"
         @blur="updateHref"
         placeholder="https://example.com"
       />
     </div>
+
     <div class="input-container">
       <label for="button-text">{{ $t('EDITOR.TEXT') }}</label>
-      <input type="text" id="button-text" v-model="localButtonText" @blur="updateText" placeholder="Texto" />
+      <input type="text" id="button-text" v-model="localState.localButtonText" @blur="updateText" placeholder="Texto" />
     </div>
+
     <div class="property-wrapper">
       <p class="property-title">{{ $t('EDITOR.ALIGNMENT') }}</p>
       <div class="align-buttons">
@@ -41,7 +123,7 @@
         </button>
       </div>
     </div>
-    <!-- Padding control -->
+
     <div class="property-wrapper">
       <p class="property-title">{{ $t('EDITOR.CONTAINER_PADDING') }}</p>
       <div class="padding-controls">
@@ -50,8 +132,8 @@
           <div class="control-wrapper">
             <input
               type="number"
-              v-model="containerPadding[side.toLowerCase()]"
-              @input="updateLocalPadding(side)"
+              v-model="localState.localContainerPadding[side.toLowerCase()]"
+              @input="updateLocalContainerPadding(side)"
               min="0"
               class="padding-input"
             />
@@ -64,77 +146,6 @@
     </div>
   </div>
 </template>
-
-<script>
-export default {
-  props: {
-    buttonLink: {
-      type: String,
-      required: true,
-    },
-    buttonText: {
-      type: String,
-      required: true,
-    },
-    containerPadding: {
-      type: Object,
-      required: true,
-    },
-    alignment: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      localButtonLink: this.buttonLink,
-      localButtonText: this.buttonText,
-      localContainerPadding: { ...this.containerPadding },
-    };
-  },
-  methods: {
-    isSelectedAlignment(align) {
-      return this.alignment === align;
-    },
-    updateHref() {
-      this.$emit('update-button-href', this.localButtonLink);
-    },
-    updateText() {
-      this.$emit('update-button-text', this.localButtonText);
-    },
-    updateAlignment(alignment) {
-      this.$emit('update-button-alignment', alignment);
-    },
-    increaseLocalPadding(side) {
-      this.localContainerPadding[side.toLowerCase()]++;
-      this.updateLocalContainerPadding(side);
-    },
-    decreaseLocalPadding(side) {
-      if (this.localContainerPadding[side.toLowerCase()] > 0) {
-        this.localContainerPadding[side.toLowerCase()]--;
-        this.updateLocalContainerPadding(side);
-      }
-    },
-    updateLocalContainerPadding(side) {
-      this.$emit('update-container-padding', {
-        side: side.toLowerCase(),
-        value: this.localContainerPadding[side.toLowerCase()],
-      });
-    },
-  },
-  watch: {
-    buttonLink(newVal) {
-      this.localButtonLink = newVal;
-    },
-    buttonText(newVal) {
-      this.localButtonText = newVal;
-    },
-    containerPadding(newPadding) {
-      this.localContainerPadding = { ...newPadding };
-    },
-  },
-};
-</script>
 
 <style scoped lang="scss">
 .properties-title {

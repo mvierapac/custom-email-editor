@@ -1,3 +1,52 @@
+<script setup>
+import { defineProps, defineEmits } from 'vue';
+
+const props = defineProps({
+  block: Object,
+  isSelected: Boolean,
+  showUpBtn: Boolean,
+  showDownBtn: Boolean,
+});
+
+const emit = defineEmits([
+  'block-selected',
+  'delete-block',
+  'duplicate-block',
+  'down-block',
+  'up-block',
+  'edit-text',
+  'upload-image',
+]);
+
+const selectBlock = () => {
+  emit('block-selected', props.block.blockId);
+};
+
+const emitDeleteBlock = () => {
+  emit('delete-block', props.block.blockId);
+};
+
+const emitDuplicateBlock = () => {
+  emit('duplicate-block', props.block.blockId);
+};
+
+const emitDownBlock = () => {
+  emit('down-block');
+};
+
+const emitUpBlock = () => {
+  emit('up-block');
+};
+
+const emitEditText = () => {
+  emit('edit-text');
+};
+
+const emitUploadImage = () => {
+  emit('upload-image');
+};
+</script>
+
 <template>
   <div
     class="block-wrapper"
@@ -12,10 +61,9 @@
     }"
     @click="selectBlock"
   >
-    <!-- Pop-up de acciones -->
     <div v-if="isSelected" class="block-action-panel">
       <v-tooltip v-if="showUpBtn" content-class="tooltip" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <button
             v-bind="props"
             class="block-action-icon mdi mdi-chevron-up"
@@ -27,7 +75,7 @@
       </v-tooltip>
 
       <v-tooltip v-if="showDownBtn" content-class="tooltip" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <button
             v-bind="props"
             class="block-action-icon mdi mdi-chevron-down"
@@ -39,33 +87,34 @@
       </v-tooltip>
 
       <v-tooltip v-if="block.type === 'text'" content-class="tooltip" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <button v-bind="props" class="block-action-icon mdi mdi-pencil" @click.stop="emitEditText"></button>
         </template>
         <span>{{ $t('EDITOR.EDIT_TEXT') }}</span>
       </v-tooltip>
 
       <v-tooltip v-if="block.type === 'image' && block.editable !== false" content-class="tooltip" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <button v-bind="props" class="block-action-icon mdi mdi-image" @click.stop="emitUploadImage"></button>
         </template>
         <span>{{ $t('EDITOR.UPLOAD_IMAGE') }}</span>
       </v-tooltip>
 
       <v-tooltip content-class="tooltip" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <button class="block-action-icon mdi mdi-delete" v-bind="props" @click.stop="emitDeleteBlock"></button>
         </template>
         <span>{{ $t('COMMON.DELETE') }}</span>
       </v-tooltip>
 
       <v-tooltip content-class="tooltip" location="bottom">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <button class="block-action-icon mdi-content-copy" v-bind="props" @click.stop="emitDuplicateBlock"></button>
         </template>
         <span>{{ $t('COMMON.COPY') }}</span>
       </v-tooltip>
     </div>
+
     <button
       v-if="block.type === 'button'"
       :style="{
@@ -79,7 +128,9 @@
         'font-weigth': '400',
       }"
     >
-      <a :href="block.properties.href" :style="{ color: 'white' }">{{ block.properties.text }}</a>
+      <a :href="block.properties.href" :style="{ color: 'white' }">
+        {{ block.properties.text }}
+      </a>
     </button>
 
     <p
@@ -118,7 +169,6 @@
       ></span>
     </p>
 
-    <!-- Renderizado del bloque de imagen -->
     <img
       v-else-if="block.type === 'image'"
       :src="block.properties.src"
@@ -131,48 +181,8 @@
         'vertical-align': 'middle',
       }"
     />
-    <!-- Puedes añadir otros tipos de bloques aquí -->
   </div>
 </template>
-
-<script>
-export default {
-  props: {
-    block: Object,
-    isSelected: Boolean,
-    showUpBtn: Boolean,
-    showDownBtn: Boolean,
-  },
-  data() {
-    return {
-      dragStartAllowed: false,
-    };
-  },
-  methods: {
-    selectBlock() {
-      this.$emit('block-selected', this.block.blockId);
-    },
-    emitDeleteBlock() {
-      this.$emit('delete-block', this.block.blockId);
-    },
-    emitDuplicateBlock() {
-      this.$emit('duplicate-block', this.block.blockId);
-    },
-    emitDownBlock() {
-      this.$emit('down-block');
-    },
-    emitUpBlock() {
-      this.$emit('up-block');
-    },
-    emitEditText() {
-      this.$emit('edit-text');
-    },
-    emitUploadImage() {
-      this.$emit('upload-image');
-    },
-  },
-};
-</script>
 
 <style scoped lang="scss">
 @import '@/assets/scss/_variables.scss';
