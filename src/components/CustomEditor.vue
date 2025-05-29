@@ -132,7 +132,7 @@
           <configure-columns-panel
             v-if="selectedRowIndex !== null"
             :emptyRowSelected="emptyRowSelected"
-            @configure-columns="configureColumns"
+            @configure-columns="handleConfigureColumns"
           />
           <Predefined-rows-panel
             v-if="selectedRowIndex !== null"
@@ -155,8 +155,8 @@
             :columnsCount="selectedRowColumns"
             :activeColumn="activeColumn"
             @column-selected="selectColumn"
-            @add-column="configureColumns"
-            @remove-column="configureColumns"
+            @add-column="handleConfigureColumns"
+            @remove-column="handleConfigureColumns"
           />
           <!-- Herramientas y propiedades de columna -->
           <ColumnPropertiesPanel
@@ -276,6 +276,7 @@ import {
 } from '@/utils/editorArrayUtils';
 
 import { saveHistoryState, undoState, redoState } from '@/utils/historyManager';
+import { getColumnClass, configureColumns } from '@/utils/editorLayoutUtils';
 
 export default {
   mounted() {
@@ -822,57 +823,16 @@ export default {
 
       this.saveHistory();
     },
-
-    getColumnClass(numColumns, firstColumnWidth) {
-      if (numColumns === 1) {
-        return 'single-column';
-      } else if (numColumns === 2) {
-        if (firstColumnWidth && firstColumnWidth === 67) {
-          return 'two-columns two-columns-67-33';
-        } else if (firstColumnWidth && firstColumnWidth === 33) {
-          return 'two-columns two-columns-33-67';
-        } else {
-          return 'two-columns';
-        }
-      } else if (numColumns === 3) {
-        return 'three-columns';
-      } else if (numColumns === 4) {
-        return 'four-columns';
-      }
-      return '';
-    },
-    // Método para configurar el número de columnas y sus proporciones
-    configureColumns(numColumns, proportions = []) {
-      if (this.selectedRowIndex === null) {
-        return;
-      }
+    getColumnClass,
+    handleConfigureColumns(numColumns, proportions = []) {
+      if (this.selectedRowIndex === null) return;
 
       const currentColumns = this.rows[this.selectedRowIndex].columns;
-      const newColumns = Array.from({ length: numColumns }, (_, i) => {
-        // Mantener el contenido y configuraciones si la columna actual existe
-        return currentColumns[i]
-          ? {
-              ...currentColumns[i], // Mantener la configuración y contenido actuales
-              width: proportions[i] || 100 / numColumns, // Ajustar el ancho según proporciones
-            }
-          : {
-              content: [], // Nueva columna sin contenido
-              backgroundColor: '#ffffff',
-              padding: { top: 0, right: 0, bottom: 0, left: 0 },
-              border: {
-                width: { top: 0, right: 0, bottom: 0, left: 0 },
-                color: { top: '#000', right: '#000', bottom: '#000', left: '#000' },
-              },
-              width: proportions[i] || 100 / numColumns,
-            };
-      });
+      const newColumns = configureColumns(numColumns, proportions, currentColumns);
 
-      // Asignar la nueva configuración de columnas a la fila seleccionada
       this.rows[this.selectedRowIndex].columns = newColumns;
-
-      // Actualizar las variables de estado
       this.activeColumn = 0;
-      this.saveHistory('configure columns');
+      this.saveHistory();
     },
 
     saveHistory() {
