@@ -365,6 +365,24 @@ const emptyRowSelected = computed(() =>
   rows[selectedRowIndex.value]?.columns.every((column) => !column.content || column.content.length === 0)
 );
 
+import { useBlockEditor } from '_composables/useBlockEditor';
+const { updateContainerPadding, updateBlockAligment, handleDeleteBlock, handleDuplicateBlock, upBlock, downBlock } =
+  useBlockEditor({
+    selectedBlock,
+    saveHistory,
+    getColumnFromBlockId,
+    selectedBlockRowIndex,
+    selectedColumnIndex,
+    rows,
+    saveHistory,
+  });
+
+import { useButtonBlockEditor } from '@/composables/useButtonBlockEditor';
+const { updateButtonText, updateButtonHref } = useButtonBlockEditor(selectedBlock, saveHistory);
+
+import { useImageBlockEditor } from '@/composables/useImageBlockEditor';
+const { updateImageHref, updateImageWidth, updateImageSrc } = useImageBlockEditor(selectedBlock, saveHistory);
+
 // Lifecycle
 onMounted(() => {
   editorContainer.value?.addEventListener('click', preventLinkNavigation);
@@ -504,58 +522,9 @@ function updateRowPadding({ side, value }) {
   }
 }
 
-function updateContainerPadding({ side, value }) {
-  if (selectedBlock.value) {
-    selectedBlock.value.properties.containerPadding[side] = value;
-    saveHistory('updateContainerPadding');
-  }
-}
-
-function updateButtonText(newText) {
-  if (selectedBlock.value) {
-    selectedBlock.value.properties.text = newText;
-    saveHistory();
-  }
-}
-
-function updateButtonHref(newHref) {
-  if (selectedBlock.value && selectedBlock.value.type === 'button') {
-    selectedBlock.value.properties.href = newHref;
-    saveHistory();
-  }
-}
-
 function updateTextLineHeight(lh) {
   if (selectedBlock.value && selectedBlock.value.type === 'text') {
     selectedBlock.value.properties.lineHeight = lh;
-    saveHistory();
-  }
-}
-
-function updateImageHref(newHref) {
-  if (selectedBlock.value && selectedBlock.value.type === 'image') {
-    selectedBlock.value.properties.href = newHref;
-    saveHistory();
-  }
-}
-
-function updateImageWidth(newWidth) {
-  if (selectedBlock.value && selectedBlock.value.type === 'image') {
-    selectedBlock.value.properties.width = newWidth;
-    saveHistory();
-  }
-}
-
-function updateImageSrc(newSrc) {
-  if (selectedBlock.value && selectedBlock.value.type === 'image') {
-    selectedBlock.value.properties.src = newSrc;
-    saveHistory();
-  }
-}
-
-function updateBlockAligment(alignment) {
-  if (selectedBlock.value) {
-    selectedBlock.value.properties.alignment = alignment;
     saveHistory();
   }
 }
@@ -587,24 +556,6 @@ function downRow(index) {
   const newRows = moveItem(rows, index, index + 1);
   rows.splice(0, rows.length, ...newRows);
   selectRow(index + 1);
-}
-
-function upBlock(index) {
-  const content = rows[selectedBlockRowIndex.value]?.columns[selectedColumnIndex.value].content;
-  if (!content) return;
-
-  const newContent = moveItem(content, index, index - 1);
-  rows[selectedBlockRowIndex.value].columns[selectedColumnIndex.value].content = newContent;
-  saveHistory();
-}
-
-function downBlock(index) {
-  const content = rows[selectedBlockRowIndex.value]?.columns[selectedColumnIndex.value].content;
-  if (!content) return;
-
-  const newContent = moveItem(content, index, index + 1);
-  rows[selectedBlockRowIndex.value].columns[selectedColumnIndex.value].content = newContent;
-  saveHistory();
 }
 
 function addRow() {
@@ -794,22 +745,6 @@ function updateTextBlockContent() {
   }
 
   modalEditText.close();
-}
-
-function handleDeleteBlock(blockId) {
-  const column = getColumnFromBlockId(blockId);
-  if (column) {
-    column.content = deleteBlockFromContent(column.content, blockId);
-    saveHistory();
-  }
-}
-
-function handleDuplicateBlock(blockId) {
-  const column = getColumnFromBlockId(blockId);
-  if (column) {
-    column.content = duplicateBlockInContent(column.content, blockId);
-    saveHistory();
-  }
 }
 
 function getColumnFromBlockId(blockId) {

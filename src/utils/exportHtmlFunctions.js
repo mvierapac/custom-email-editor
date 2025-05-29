@@ -63,7 +63,9 @@ export function generateMJML(rows) {
               font-family="Arial, sans-serif"
               background-color="${block.properties.backgroundColor || '#1973b8'}"
               color="${block.properties.color || '#ffffff'}"
-              padding="${block.properties.padding || '12px 32px'}"
+              padding="${block.properties.containerPadding.top}px ${
+                block.properties.containerPadding.right
+              }px ${block.properties.containerPadding.bottom}px ${block.properties.containerPadding.left}px"
               border-radius="${block.properties.borderRadius || '1px'}"
               align="${block.properties.alignment || 'center'}"
             >
